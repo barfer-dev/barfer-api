@@ -49,7 +49,10 @@ export class OptionsService {
   async findByProductId(productId: string): Promise<OptionResponseDto[]> {
     const options: OptionResponseDto[] = (
       await this.optionModel.find({ productId }).exec()
-    ).map((option) => option.toObject());
+
+    ).map((option) => ({...option.toObject(),
+      _id: option._id.toString(),
+    }));
 
     if (!options) {
       throw new BadRequestException('Options not found');

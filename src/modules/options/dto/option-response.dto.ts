@@ -5,7 +5,7 @@ import { ObjectId } from 'mongoose';
 export class OptionResponseDto {
   @IsString()
   @IsOptional()
-  _id?: ObjectId;
+  _id?: string;
 
   @Transform(({ value }) => value.trim())
   @IsString()

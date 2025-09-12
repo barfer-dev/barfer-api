@@ -60,8 +60,8 @@ export class UsersService {
     if (dataFromLocalCache) {
       return dataFromLocalCache;
     }
-
-    const user = await this.userModel.findById({ _id: id }).exec();
+    // const user = await this.userModel.findById({ _id: id }).exec();
+    const user = await this.userModel.findById(id).exec();
     if (!user) {
       throw new NotFoundException('User not found');
     }

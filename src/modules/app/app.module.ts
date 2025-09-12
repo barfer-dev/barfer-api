@@ -14,6 +14,7 @@ import { OrdersModule } from '../../modules/orders/orders.module';
 import { ProductsModule } from '../../modules/products/products.module';
 import { UsersModule } from '../../modules/users/users.module';
 import { MercadoPagoModule } from '../mercado-pago/mercado-pago.module';
+import { PaywayModule } from '../payway/payway.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { CouponsModule } from '../../modules/coupons/coupons.module';
@@ -57,6 +58,7 @@ import { BankInfoModule } from '../bank-info/bank-info.module';
     OrdersModule,
     OptionsModule,
     MercadoPagoModule,
+    PaywayModule,
     CouponsModule,
     AnnouncementsModule,
     ImagesModule,
