@@ -120,13 +120,15 @@ export class ProductsService {
 
     if (!Types.ObjectId.isValid(id)) {
       // Si no es ObjectId válido → devolvés un 400
-      throw new BadRequestException(`Invalid ID: ${id}`);
+     // throw new BadRequestException(`Invalid ID: ${id}`);
+     return null;
     }
 
     const productFounded = await this.productModel.findById(id).exec();
 
     if (!productFounded) {
-      throw new NotFoundException('Product not found');
+      // throw new NotFoundException('Product not found');
+      return null;
     }
 
     const productToReturn: ProductResponseDto =
