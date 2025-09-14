@@ -117,26 +117,48 @@ export class ProductsService {
   }
 
   async findOneById(id: string): Promise<ProductResponseDto> {
-    try {
-      // const productFounded = await this.productModel.findById({ _id: id }).exec();
-      const productFounded = await this.productModel.findById(id).exec();
-      if (!productFounded) {
-        throw new NotFoundException('Product not found');
-      }
 
-      const productToReturn: ProductResponseDto =
-        await this.toProductResponseDto(productFounded);
+    if (!Types.ObjectId.isValid(id)) {
+      // Si no es ObjectId válido → devolvés un 400
+      throw new BadRequestException(`Invalid ID: ${id}`);
+    }
 
-      const options = await this.optionService.findByProductId(id);
+    const productFounded = await this.productModel.findById(id).exec();
 
-      if (options) {
-        productToReturn.options = await this.addDiscountsToOptions(options);
-      }
-
-      return productToReturn;
-    } catch (error) {
+    if (!productFounded) {
       throw new NotFoundException('Product not found');
     }
+
+    const productToReturn: ProductResponseDto =
+      await this.toProductResponseDto(productFounded);
+
+    const options = await this.optionService.findByProductId(id);
+
+    if (options) {
+      productToReturn.options = await this.addDiscountsToOptions(options);
+    }
+
+    return productToReturn;
+    // try {
+    //   // const productFounded = await this.productModel.findById({ _id: id }).exec();
+    //   const productFounded = await this.productModel.findById(id).exec();
+    //   if (!productFounded) {
+    //     throw new NotFoundException('Product not found');
+    //   }
+
+    //   const productToReturn: ProductResponseDto =
+    //     await this.toProductResponseDto(productFounded);
+
+    //   const options = await this.optionService.findByProductId(id);
+
+    //   if (options) {
+    //     productToReturn.options = await this.addDiscountsToOptions(options);
+    //   }
+
+    //   return productToReturn;
+    // } catch (error) {
+    //   throw new NotFoundException('Product not found');
+    // }
   }
 
   async findManyByIds(ids: string[]): Promise<ProductResponseDto[]> {
