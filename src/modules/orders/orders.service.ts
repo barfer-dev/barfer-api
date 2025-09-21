@@ -570,7 +570,14 @@ export class OrdersService {
 
     if (OrderStatus[updateOrderDto.status] === OrderStatus[2]) {
       order.items.forEach(async (item) => {
-        await this.productsService.updateSalesCount(item.id, 1);
+        try {
+          await this.productsService.updateSalesCount(item.id, 1);
+        } catch (error) {
+          console.error(
+            `[Order Status Update Error] Failed to update sales count for product ${item.id}:`,
+            error.message,
+          );
+        }
       });
     }
 
@@ -583,7 +590,14 @@ export class OrdersService {
       await this.couponService.update(order.coupon, coupon);
       await this.sumStock(order.items);
       order.items.forEach(async (item) => {
-        await this.productsService.restoreSalesCount(item.id, 1);
+        try {
+          await this.productsService.restoreSalesCount(item.id, 1);
+        } catch (error) {
+          console.error(
+            `[Order Status Update Error] Failed to restore sales count for product ${item.id}:`,
+            error.message,
+          );
+        }
       });
     }
 
@@ -654,21 +668,30 @@ export class OrdersService {
 
         // Actualizar el estado de los productos vendidos
         order.items.forEach(async (item) => {
-          const product = await this.productsService.findOneById(item.id);
-          product.salesCount += 1;
+          try {
+            const product = await this.productsService.findOneById(item.id);
+            if (product) {
+              product.salesCount += 1;
 
-          const newProduct = new ProductDto();
-          newProduct.id = product.id;
-          newProduct.name = product.name;
-          newProduct.description = product.description;
-          newProduct.price = product.price;
-          newProduct.stock = product.stock;
-          newProduct.category = product.category?.id || product.category?._id;
-          newProduct.images = product.images;
-          newProduct.options = product.options;
-          newProduct.salesCount = product.salesCount;
+              const newProduct = new ProductDto();
+              newProduct.id = product.id;
+              newProduct.name = product.name;
+              newProduct.description = product.description;
+              newProduct.price = product.price;
+              newProduct.stock = product.stock;
+              newProduct.category = product.category?.id || product.category?._id;
+              newProduct.images = product.images;
+              newProduct.options = product.options;
+              newProduct.salesCount = product.salesCount;
 
-          await this.productsService.update(item.id, newProduct);
+              await this.productsService.update(item.id, newProduct);
+            }
+          } catch (error) {
+            console.error(
+              `[MP Webhook Error] Failed to update product ${item.id} sales count:`,
+              error.message,
+            );
+          }
         });
 
         if (order.status !== OrderStatus[2]) {
