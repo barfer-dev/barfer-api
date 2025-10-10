@@ -69,15 +69,22 @@ export class MailerService {
         const discountedPrice = subTotal - totalDiscount;
 
         return `
-        <div style="display: flex; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #ddd; padding-bottom: 10px;">
-          <img src="${product.images[0]}" alt="Product Image" style="width: 50px; height: 50px; border-radius: 50%; margin-right: 10px; background-color: #fff;" />
+        <div style="background-color: #f7fafc; border-radius: 12px; padding: 16px; margin-bottom: 12px; display: flex; gap: 16px;">
+          <img src="${product.images[0]}" alt="Product" style="width: 70px; height: 70px; object-fit: cover; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" />
           <div style="flex: 1;">
-            <p style="margin: 0; font-weight: bold;">${product.options[0]?.quantity} ${product.name} - ${product.options[0]?.name}</p>
-            <p style="margin: 0; color: #666;">${product.options[0]?.description}</p>
+            <p style="margin: 0 0 4px 0; font-size: 16px; font-weight: 600; color: #2d3748;">${product.name}</p>
+            <p style="margin: 0 0 8px 0; font-size: 14px; color: #718096;">${product.options[0]?.name} · ${product.options[0]?.description}</p>
+            <div style="display: inline-block; background-color: #e6fffa; color: #047857; padding: 4px 12px; border-radius: 6px; font-size: 12px; font-weight: 600;">
+              Cantidad: ${product.options[0]?.quantity}
+            </div>
           </div>
-          <div style="text-align: right; margin-left: 1rem;">
-            <p style="margin: 0; ${totalDiscount > 0 ? 'text-decoration: line-through;' : ''}">${formatPrice(subTotal)}</p>
-            ${totalDiscount > 0 ? `<p style="margin: 0; color: #e63946;">${formatPrice(discountedPrice)}</p>` : ''}
+          <div style="display: flex; flex-direction: column; justify-content: center; align-items: flex-end;">
+            ${totalDiscount > 0 ? `
+              <p style="margin: 0 0 4px 0; font-size: 14px; color: #a0aec0; text-decoration: line-through;">${formatPrice(subTotal)}</p>
+              <p style="margin: 0; font-size: 18px; font-weight: 700; color: #e53e3e;">${formatPrice(discountedPrice)}</p>
+            ` : `
+              <p style="margin: 0; font-size: 18px; font-weight: 700; color: #2d3748;">${formatPrice(subTotal)}</p>
+            `}
           </div>
         </div>
       `;
@@ -85,21 +92,72 @@ export class MailerService {
       .join('');
 
     const html = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; background-color: #265ba7; border-radius: 10px; color: #FFFFD9;">
-        <div style="text-align: center;">
-         <img src="https://res.cloudinary.com/maurov069/image/upload/v1732128835/4_czbc1z.png" alt="Brand Logo" style="width: 100px; height: auto; border-radius: 999px; background-color: #ffffd9;" />
-        </div>
-        <h1 style="text-align: center; color: #FFFFD9;">¡Gracias por tu compra!</h1>
-        <div style="background-color: #fff; padding: 20px; border-radius: 10px; margin-bottom: 20px; color: #333;">
-          <h2 style="margin-bottom: 10px;">${quantityTotal} productos en tu compra (${formatPrice(order.total)})</h2>
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; background-color: #f8f9fa;">
+        <div style="background-color: #fff; border-radius: 16px; padding: 32px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+          <div style="text-align: center; margin-bottom: 24px;">
+            <img src="src/assets/logo.png" alt="Brand Logo" style="width: 90px; height: auto; border-radius: 999px; margin-bottom: 16px;" />
+            <h1 style="font-size: 32px; font-weight: 700; color: #2d3748; margin: 0 0 8px 0;">¡Gracias por tu compra!</h1>
+            <p style="font-size: 16px; color: #718096; margin: 0;">Tu pedido ha sido confirmado exitosamente</p>
+          </div>
+
+          <div style="background-color: #edf2f7; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <p style="margin: 0 0 4px 0; font-size: 14px; color: #718096;">Total del pedido</p>
+                <p style="margin: 0; font-size: 28px; font-weight: 700; color: #2d3748;">${formatPrice(order.total)}</p>
+              </div>
+              <div style="text-align: right;">
+                <p style="margin: 0 0 4px 0; font-size: 14px; color: #718096;">Productos</p>
+                <p style="margin: 0; font-size: 28px; font-weight: 700; color: #4299e1;">${quantityTotal}</p>
+              </div>
+            </div>
+          </div>
+
+          <h2 style="font-size: 18px; font-weight: 600; color: #2d3748; margin: 0 0 16px 0;">Productos en tu pedido</h2>
+          
           ${productsHtml}
         </div>
-        <div style="background-color: #fff; padding: 20px; border-radius: 10px; color: #333;">
-          <h2 style="margin-bottom: 10px;">Detalles de envío</h2>
-          <p><strong>Fecha de entrega:</strong> ${deliveryDate}</p>
-          <p><strong>Dirección:</strong> ${order.address?.address}</p>
-          <p><strong>Teléfono:</strong> ${order.address?.phone}</p>
-          <p><strong>Método de pago:</strong> ${order.paymentMethod === 'cash' ? 'A pagar en efectivo' : 'Pago con Mercado Pago'}</p>
+
+        <div style="background-color: #fff; border-radius: 16px; padding: 32px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+          <h2 style="font-size: 18px; font-weight: 600; color: #2d3748; margin: 0 0 20px 0;">Detalles de envío</h2>
+          <div style="display: grid; gap: 16px;">
+            <div style="display: flex; align-items: start; gap: 12px;">
+              <div style="width: 40px; height: 40px; background-color: #ebf8ff; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <span style="font-size: 20px;">📅</span>
+              </div>
+              <div>
+                <p style="margin: 0 0 4px 0; font-size: 14px; color: #718096;">Fecha de entrega</p>
+                <p style="margin: 0; font-size: 16px; font-weight: 600; color: #2d3748;">${deliveryDate}</p>
+              </div>
+            </div>
+            <div style="display: flex; align-items: start; gap: 12px;">
+              <div style="width: 40px; height: 40px; background-color: #fef5e7; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <span style="font-size: 20px;">📍</span>
+              </div>
+              <div>
+                <p style="margin: 0 0 4px 0; font-size: 14px; color: #718096;">Dirección</p>
+                <p style="margin: 0; font-size: 16px; font-weight: 600; color: #2d3748;">${order.address?.address}</p>
+              </div>
+            </div>
+            <div style="display: flex; align-items: start; gap: 12px;">
+              <div style="width: 40px; height: 40px; background-color: #f0fdf4; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <span style="font-size: 20px;">📱</span>
+              </div>
+              <div>
+                <p style="margin: 0 0 4px 0; font-size: 14px; color: #718096;">Teléfono</p>
+                <p style="margin: 0; font-size: 16px; font-weight: 600; color: #2d3748;">${order.address?.phone}</p>
+              </div>
+            </div>
+            <div style="display: flex; align-items: start; gap: 12px;">
+              <div style="width: 40px; height: 40px; background-color: #fce7f3; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <span style="font-size: 20px;">💳</span>
+              </div>
+              <div>
+                <p style="margin: 0 0 4px 0; font-size: 14px; color: #718096;">Método de pago</p>
+                <p style="margin: 0; font-size: 16px; font-weight: 600; color: #2d3748;">${order.paymentMethod === 'cash' ? 'A pagar en efectivo' : 'Pago con Mercado Pago'}</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     `;
