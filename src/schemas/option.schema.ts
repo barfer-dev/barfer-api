@@ -28,6 +28,11 @@ export class Option {
   price: number;
 
   @Prop({
+    required: false,
+  })
+  offerPrice?: number;
+
+  @Prop({
     required: true,
   })
   productId: string;

@@ -17,6 +17,10 @@ export class OptionDto {
 
   @IsNumber()
   @IsOptional()
+  offerPrice?: number;
+
+  @IsNumber()
+  @IsOptional()
   stock?: number;
 
   @IsString()

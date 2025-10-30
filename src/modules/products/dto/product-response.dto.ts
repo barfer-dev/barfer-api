@@ -38,6 +38,10 @@ export class ProductResponseDto {
 
   @IsNumber()
   @IsOptional()
+  offerPrice?: number;
+
+  @IsNumber()
+  @IsOptional()
   stock?: number;
 
   @IsArray()

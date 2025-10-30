@@ -21,6 +21,10 @@ export class OptionResponseDto {
   price: number;
 
   @IsNumber()
+  @IsOptional()
+  offerPrice?: number;
+
+  @IsNumber()
   @IsNotEmpty()
   stock: number;
 

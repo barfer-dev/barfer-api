@@ -47,6 +47,7 @@ export class ProductsService {
       name: createProductDto.name,
       description: createProductDto.description,
       price: createProductDto.price,
+      offerPrice: createProductDto.offerPrice,
       category: Icategory,
       stock: createProductDto.stock,
       images: createProductDto.images,
@@ -94,6 +95,7 @@ export class ProductsService {
       name: product.name,
       description: product.description,
       price: product.price,
+      offerPrice: product.offerPrice,
       category: product.category,
       stock: product.stock,
       images: product.images,
@@ -198,11 +200,11 @@ export class ProductsService {
         updateProductDto.category,
       );
     }
-
     const updatedProduct = {
       name: updateProductDto.name,
       description: updateProductDto.description,
       price: updateProductDto.price,
+      offerPrice: updateProductDto.offerPrice,
       category: Icategory,
       stock: updateProductDto.stock,
       images: updateProductDto.images,
@@ -450,12 +452,13 @@ export class ProductsService {
           const availability = (option.stock && option.stock > 0) ? 'in stock' : 'out of stock';
 
           const priceFormatted = option.price ? `${option.price} ARS` : '0 ARS';
+          const salePriceFormatted = option.offerPrice ? `${option.offerPrice} ARS` : undefined;
 
           const title = `${product.name} - ${option.name}`;
 
           const uniqueId = `${product._id.toString()}_${option._id.toString()}`;
 
-          feedItems.push({
+          const feedItem: any = {
             id: uniqueId,
             title: title,
             description: product.description || '',
@@ -464,13 +467,20 @@ export class ProductsService {
             price: priceFormatted,
             availability: availability,
             condition: 'new',
-          });
+          };
+
+          if (salePriceFormatted) {
+            feedItem.sale_price = salePriceFormatted;
+          }
+
+          feedItems.push(feedItem);
         });
       } else if (product.price) {
         const availability = (product.stock && product.stock > 0) ? 'in stock' : 'out of stock';
         const priceFormatted = `${product.price} ARS`;
+        const salePriceFormatted = product.offerPrice ? `${product.offerPrice} ARS` : undefined;
 
-        feedItems.push({
+        const feedItem: any = {
           id: product._id.toString(),
           title: product.name || '',
           description: product.description || '',
@@ -479,7 +489,13 @@ export class ProductsService {
           price: priceFormatted,
           availability: availability,
           condition: 'new',
-        });
+        };
+
+        if (salePriceFormatted) {
+          feedItem.sale_price = salePriceFormatted;
+        }
+
+        feedItems.push(feedItem);
       }
     });
 

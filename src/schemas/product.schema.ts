@@ -23,6 +23,11 @@ export class Product {
   price?: number;
 
   @Prop({
+    required: false,
+  })
+  offerPrice?: number;
+
+  @Prop({
     required: true,
   })
   category: CreateCategoryDto;
