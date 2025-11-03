@@ -1,6 +1,7 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
+import * as path from 'path';
 import { Order } from '../../schemas/order.schema';
 import { formatPrice } from '../../common/utils/formatPrice';
 
@@ -8,7 +9,23 @@ import { formatPrice } from '../../common/utils/formatPrice';
 export class MailerService {
   constructor(private readonly configService: ConfigService) {}
 
-  async sendMail(to: string, subject: string, text?: string, html?: string) {
+  private getLogoAsAttachment(): any[] {
+    try {
+      const logoPath = path.join(process.cwd(), 'dist/assets/logo.png');
+      return [
+        {
+          filename: 'logo.png',
+          path: logoPath,
+          cid: 'logo', // Identificador de contenido para referenciar en el HTML
+        },
+      ];
+    } catch (error) {
+      console.error('Error loading logo attachment:', error);
+      return [];
+    }
+  }
+
+  async sendMail(to: string, subject: string, text?: string, html?: string, attachments?: any[]) {
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       host: 'smtp.gmail.com',
@@ -31,6 +48,7 @@ export class MailerService {
 
     if (text) mailOptions.text = text;
     if (html) mailOptions.html = html;
+    if (attachments) mailOptions.attachments = attachments;
 
     try {
       await transporter.sendMail(mailOptions);
@@ -47,9 +65,55 @@ export class MailerService {
     await this.sendMail(userEmail, subject, text);
   }
 
+  async sendWelcomeEmail(userEmail: string, userName: string) {
+    const subject = '¡Bienvenido a Barfer!';
+    const frontendUrl = this.configService.get<string>('FRONTEND_BASE_URL');
+    const logoAttachments = this.getLogoAsAttachment();
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; background-color: #f8f9fa;">
+        <div style="background-color: #fff; border-radius: 16px; padding: 32px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+          <div style="text-align: center; margin-bottom: 24px;">
+            <img src="cid:logo" alt="Barfer Logo" style="width: 90px; height: auto; border-radius: 999px; margin-bottom: 16px;" />
+            <h1 style="font-size: 32px; font-weight: 700; color: #2d3748; margin: 0 0 8px 0;">¡Bienvenido${userName ? `, ${userName}` : ''}!</h1>
+            <p style="font-size: 16px; color: #718096; margin: 0;">Tu cuenta ha sido creada exitosamente</p>
+          </div>
+
+          <div style="background-color: #edf2f7; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+            <p style="margin: 0 0 12px 0; font-size: 16px; color: #2d3748; line-height: 1.6;">
+              Estamos muy contentos de tenerte con nosotros. Ahora puedes disfrutar de nuestros productos de alimentación natural para tu mascota.
+            </p>
+            <p style="margin: 0; font-size: 16px; color: #2d3748; line-height: 1.6;">
+              Explora nuestra tienda y encuentra los mejores productos para el bienestar de tu peludo.
+            </p>
+          </div>
+
+          <div style="text-align: center; margin-bottom: 24px;">
+            <a href="${frontendUrl}/tienda" style="display: inline-block; background-color: #4299e1; color: #ffffff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px;">
+              Ver Productos
+            </a>
+          </div>
+
+          <div style="border-top: 1px solid #e2e8f0; padding-top: 24px; margin-top: 24px;">
+            <p style="margin: 0 0 12px 0; font-size: 14px; color: #718096; line-height: 1.6;">
+              Si tienes alguna pregunta, no dudes en contactarnos. Estamos aquí para ayudarte.
+            </p>
+            <p style="margin: 0; font-size: 14px; color: #718096;">
+              ¡Gracias por unirte a la familia Barfer!
+            </p>
+          </div>
+        </div>
+      </div>
+    `;
+
+    await this.sendMail(userEmail, subject, undefined, html, logoAttachments);
+  }
+
   async sendOrderConfirmationEmail(userEmail: string, order: Order) {
     const subject = 'Confirmación de Pedido';
     const deliveryDate = order.deliveryDate || 'Fecha no especificada';
+    const frontendUrl = this.configService.get<string>('FRONTEND_BASE_URL');
+    const logoAttachments = this.getLogoAsAttachment();
 
     const quantityTotal = order.items.reduce(
       (prev, acc) => acc.options[0].quantity + prev,
@@ -95,7 +159,7 @@ export class MailerService {
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; background-color: #f8f9fa;">
         <div style="background-color: #fff; border-radius: 16px; padding: 32px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
           <div style="text-align: center; margin-bottom: 24px;">
-            <img src="src/assets/logo.png" alt="Brand Logo" style="width: 90px; height: auto; border-radius: 999px; margin-bottom: 16px;" />
+            <img src="cid:logo" alt="Brand Logo" style="width: 90px; height: auto; border-radius: 999px; margin-bottom: 16px;" />
             <h1 style="font-size: 32px; font-weight: 700; color: #2d3748; margin: 0 0 8px 0;">¡Gracias por tu compra!</h1>
             <p style="font-size: 16px; color: #718096; margin: 0;">Tu pedido ha sido confirmado exitosamente</p>
           </div>
@@ -162,6 +226,6 @@ export class MailerService {
       </div>
     `;
 
-    await this.sendMail(userEmail, subject, undefined, html);
+    await this.sendMail(userEmail, subject, undefined, html, logoAttachments);
   }
 }

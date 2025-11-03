@@ -45,6 +45,17 @@ export class AuthService {
 
     await this.userService.create(registerDto);
 
+    // Enviar email de bienvenida
+    try {
+      await this.mailerService.sendWelcomeEmail(
+        registerDto.email,
+        registerDto.name,
+      );
+    } catch (error) {
+      console.error('Error sending welcome email:', error);
+      // No fallamos el registro si falla el email
+    }
+
     return {
       message: 'User created successfully',
     };
@@ -109,6 +120,14 @@ export class AuthService {
       registerDto.role = 3;
       registerDto.password = v4(); // Puedes asignar una contraseña vacía o generar una aleatoria
       user = await this.userService.create(registerDto);
+
+      // Enviar email de bienvenida para usuarios nuevos de Google
+      try {
+        await this.mailerService.sendWelcomeEmail(email, firstName);
+      } catch (error) {
+        console.error('Error sending welcome email:', error);
+        // No fallamos el login si falla el email
+      }
     }
 
     const payload = {
