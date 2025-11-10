@@ -14,6 +14,8 @@ import { DeliveryAreaDto } from './dto/delivery-area.dto';
 import { Auth } from '../auth/decorators/auth.decorator';
 import { SearchAreaRequestDto } from './dto/search-area-request.dto';
 import { SearchAreaResponseDto } from './dto/search-area-response.dto';
+import { VerifyAddressDto } from './dto/verify-address.dto';
+import { VerifyAddressResponseDto } from './dto/verify-address-response.dto';
 
 @Controller('delivery-areas')
 export class DeliveryAreasController {
@@ -71,5 +73,11 @@ export class DeliveryAreasController {
         'Debe proporcionar latitud y longitud o una dirección.',
       );
     }
+  }
+
+  @Post('/verify')
+  async verifyAddress(@Body() verifyAddressDto: VerifyAddressDto): Promise<VerifyAddressResponseDto> {
+    const result = await this.deliveryAreasService.verifyAddressByString(verifyAddressDto.address);
+    return result;
   }
 }

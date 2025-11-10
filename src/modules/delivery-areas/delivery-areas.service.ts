@@ -15,6 +15,7 @@ import {
   ZoneMatchDto,
 } from './dto/search-area-response.dto';
 import { DeliverySheetService } from '../google-sheet/delivery-sheet.service';
+import { VerifyAddressResponseDto } from './dto/verify-address-response.dto';
 
 @Injectable()
 export class DeliveryAreasService {
@@ -201,6 +202,79 @@ export class DeliveryAreasService {
       }
     } catch (error) {
       console.error('ERROR al buscar ÁREA por dirección: ', error);
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
+  async verifyAddressByString(address: string): Promise<VerifyAddressResponseDto> {
+    try {
+      const apiKey = this.configService.get<string>('GOOGLE_MAPS_API_KEY');
+      
+      // Agregar Buenos Aires al final si no está presente
+      const searchAddress = address.toLowerCase().includes('buenos aires') || 
+                           address.toLowerCase().includes('caba') ||
+                           address.toLowerCase().includes('argentina')
+        ? address
+        : `${address}, Buenos Aires, Argentina`;
+            
+      const response = await axios.get(
+        `https://maps.googleapis.com/maps/api/geocode/json`,
+        {
+          params: {
+            address: searchAddress,
+            key: apiKey,
+            region: 'ar', // Bias hacia Argentina
+            components: 'country:AR', // Restringir a Argentina
+          },
+        },
+      );
+
+      if (response.data.results?.[0]?.geometry?.location) {
+        const { lat, lng } = response.data.results[0].geometry.location;
+        const formattedAddress = response.data.results[0].formatted_address;
+        const zones = await this.verifyAddressByCoordinates(lat, lng);
+        const result = {
+          zones,
+          formattedAddress,
+          lat,
+          lng,
+        };
+        return result;
+      } else {
+        throw new BadRequestException(
+          'No se encontraron resultados para la dirección proporcionada.',
+        );
+      }
+    } catch (error) {
+      console.error('ERROR al verificar dirección: ', error);
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
+  async verifyAddressByCoordinates(
+    lat: number,
+    lon: number,
+  ): Promise<DeliveryArea[]> {
+    try {
+      const point = turf.point([lon, lat]);
+      const zones = await this.deliveryAreaModel.find({
+        $or: [{ enabled: true }, { enabled: { $exists: false } }],
+      });
+      const matchedZones: DeliveryArea[] = [];
+
+      for (const zone of zones) {
+        const correctedPolygon = this.correctPolygon([zone.coordinates]);
+        const multiPolygon = turf.multiPolygon([correctedPolygon]);
+        const isValidPoint = turf.booleanPointInPolygon(point, multiPolygon);
+
+        if (isValidPoint) {
+          matchedZones.push(zone);
+        }
+      }
+
+      return matchedZones;
+    } catch (error) {
+      console.error('ERROR al verificar dirección por coordenadas: ', error);
       throw new InternalServerErrorException(error.message);
     }
   }
