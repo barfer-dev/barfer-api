@@ -81,25 +81,28 @@ export class MailerService {
 
           <div style="background-color: #edf2f7; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
             <p style="margin: 0 0 12px 0; font-size: 16px; color: #2d3748; line-height: 1.6;">
-              Estamos muy contentos de tenerte con nosotros. Ahora puedes disfrutar de nuestros productos de alimentación natural para tu mascota.
+              Estamos muy contentos de que seas parte de la familia de Barfer🙌💙
+            </p>
+            <p style="margin: 0 0 12px 0; font-size: 16px; color: #2d3748; line-height: 1.6;">
+              Entrando al siguiente link: <a href="https://www.barferalimento.com/nuevo-usuario" style="color: #265BA7; text-decoration: none; font-weight: 600;">Nuevo usuario | barfer alimento</a> vas a tener info de cuanto debes darle de comer a tu amigo🐶😺, como se debe utilizar el alimento e ingresando el cupón: <strong>BARFER20</strong>, vas a tener un 20% de descuento en tu primera compra.
             </p>
             <p style="margin: 0; font-size: 16px; color: #2d3748; line-height: 1.6;">
-              Explora nuestra tienda y encuentra los mejores productos para el bienestar de tu peludo.
+              Explora nuestra tienda y encuentra los mejores productos para el bienestar de tu peludo!
             </p>
           </div>
 
           <div style="text-align: center; margin-bottom: 24px;">
-            <a href="${frontendUrl}/tienda" style="display: inline-block; background-color: #4299e1; color: #ffffff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px;">
+            <a href="${frontendUrl}/tienda" style="display: inline-block; background-color: #265BA7; color: #ffffff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px;">
               Ver Productos
             </a>
           </div>
 
           <div style="border-top: 1px solid #e2e8f0; padding-top: 24px; margin-top: 24px;">
             <p style="margin: 0 0 12px 0; font-size: 14px; color: #718096; line-height: 1.6;">
-              Si tienes alguna pregunta, no dudes en contactarnos. Estamos aquí para ayudarte.
+              Si tienes alguna pregunta, no dudes en contactarnos al whatsapp: <a href="https://wa.me/541122994758" style="color: #265BA7; text-decoration: none; font-weight: 600;">11 2299-4758</a>.
             </p>
             <p style="margin: 0; font-size: 14px; color: #718096;">
-              ¡Gracias por unirte a la familia Barfer!
+              Estamos aquí para ayudarte!
             </p>
           </div>
         </div>
