@@ -32,6 +32,85 @@
 $ npm install
 ```
 
+## Environment Variables
+
+Create a `.env` file in the root directory with the following variables:
+
+```env
+# Database
+DATABASE_URL=mongodb://localhost:27017/barfer
+
+# Server
+NODE_ENV=development
+PORT=3000
+BACKEND_BASE_URL=http://localhost:3000
+FRONTEND_BASE_URL=http://localhost:5173
+
+# JWT
+JWT_SECRET=your-jwt-secret
+JWT_EXPIRES_IN=1h
+JWT_REFRESH_SECRET=your-refresh-secret
+JWT_REFRESH_EXPIRES_IN=7d
+
+# Cache
+CACHE_TTL=3600
+
+# Cookie
+COOKIE_SECRET=your-cookie-secret
+
+# Mercado Pago
+MP_PUBLIC_KEY=your-mp-public-key
+MP_ACCESS_TOKEN=your-mp-access-token
+MP_BASE_URL=https://api.mercadopago.com
+MP_PAYMENT_URL=https://www.mercadopago.com.ar/checkout/v1/payment
+
+# Payway (Optional)
+PAYWAY_SITE_ID=your-payway-site-id
+PAYWAY_PUBLIC_API_KEY=your-payway-public-key
+PAYWAY_PRIVATE_API_KEY=your-payway-private-key
+PAYWAY_BASE_URL=https://developers.decidir.com
+
+# Email
+EMAIL_FROM=your-email@gmail.com
+EMAIL_PASS=your-email-password
+
+# Google OAuth
+OAUTH_CLIENT_ID=your-google-client-id
+OAUTH_CLIENT_SECRET=your-google-client-secret
+
+# Google Sheets
+GOOGLE_CLIENT_EMAIL=your-service-account@project.iam.gserviceaccount.com
+GOOGLE_CLIENT_PRIVATE_KEY=your-private-key
+GOOGLE_SHEET_ID=your-sheet-id
+GOOGLE_SHEET_SAME_DAY_ID=your-same-day-sheet-id
+
+# Google Maps API (for address verification)
+GOOGLE_MAPS_API_KEY=your-google-maps-api-key
+
+# Cloudinary
+CLOUDINARY_CLOUD_NAME=your-cloud-name
+CLOUDINARY_API_KEY=your-cloudinary-api-key
+CLOUDINARY_API_SECRET=your-cloudinary-api-secret
+
+# Meta Conversions API
+META_ACCESS_TOKEN=your-meta-access-token
+```
+
+### Google Maps API Setup
+
+The application uses Google Maps Geocoding API to verify and validate addresses before saving them. To set this up:
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project or select an existing one
+3. Enable the **Geocoding API**
+4. Go to Credentials and create an API key
+5. Restrict the API key (recommended):
+   - Application restrictions: IP addresses (add your server IPs)
+   - API restrictions: Restrict to Geocoding API only
+6. Add the API key to your `.env` file as `GOOGLE_MAPS_API_KEY`
+
+**Note:** Google provides $200 of free credit monthly (~40,000 geocoding requests). Monitor your usage in the Google Cloud Console.
+
 ## Running the app
 
 ```bash

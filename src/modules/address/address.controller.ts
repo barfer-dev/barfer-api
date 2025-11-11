@@ -10,11 +10,26 @@ import {
 import { Auth } from '../auth/decorators/auth.decorator';
 import { Roles } from '../../common/enums/roles.enum';
 import { AddressDto } from './dto/address.dto';
+import { VerifyAddressDto } from './dto/verify-address.dto';
 import { AddressService } from './address.service';
+import { GoogleMapsService } from './google-maps.service';
 
 @Controller('address')
 export class AddressController {
-  constructor(private readonly addressService: AddressService) {}
+  constructor(
+    private readonly addressService: AddressService,
+    private readonly googleMapsService: GoogleMapsService,
+  ) {}
+
+  @Post('verify')
+  @Auth(Roles.User)
+  async verifyAddress(@Body() verifyAddressDto: VerifyAddressDto) {
+    const fullAddress = verifyAddressDto.city
+      ? `${verifyAddressDto.address}, ${verifyAddressDto.city}`
+      : verifyAddressDto.address;
+    
+    return await this.googleMapsService.verifyAddress(fullAddress);
+  }
 
   @Post()
   @Auth(Roles.User)
