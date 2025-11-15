@@ -11,7 +11,17 @@ export class MetaConversionsController {
   @Post('add-to-cart')
   async addToCart(
     @Body()
-    body: { productId: string; value: number; currency: string; email: string },
+    body: {
+      productId: string;
+      value: number;
+      currency: string;
+      email: string;
+      contentIds?: string[];
+      contents?: Array<{ id: string; quantity: number; item_price?: number }>;
+      numItems?: number;
+      contentCategory?: string;
+      eventId?: string;
+    },
     @Req() req: Request,
   ) {
     const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
@@ -22,13 +32,28 @@ export class MetaConversionsController {
       body.email,
       ip as string,
       userAgent,
+      body.contentIds,
+      body.contents,
+      body.numItems,
+      body.contentCategory,
+      body.eventId,
     );
   }
 
   @Post('view-content')
   async viewContent(
     @Body()
-    body: { productId: string; value: number; currency: string; email: string },
+    body: {
+      productId: string;
+      value: number;
+      currency: string;
+      email: string;
+      contentIds?: string[];
+      contents?: Array<{ id: string; quantity: number; item_price?: number }>;
+      numItems?: number;
+      contentCategory?: string;
+      eventId?: string;
+    },
     @Req() req: Request,
   ) {
     const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
@@ -40,6 +65,11 @@ export class MetaConversionsController {
       body.email,
       ip as string,
       userAgent,
+      body.contentIds,
+      body.contents,
+      body.numItems,
+      body.contentCategory,
+      body.eventId,
     );
   }
 
@@ -50,6 +80,10 @@ export class MetaConversionsController {
       transactionId: string;
       value: number;
       email: string;
+      contentIds?: string[];
+      contents?: Array<{ id: string; quantity: number; item_price?: number }>;
+      numItems?: number;
+      orderId?: string;
     },
     @Req() req: Request,
   ) {
@@ -60,9 +94,13 @@ export class MetaConversionsController {
     return this.metaConversionsService.trackPurchase(
       body.transactionId, // Usar el ID de la transacción como event_id
       body.value, // El valor de la compra
-      body.email, // El email del usuario
       ip as string, // Dirección IP del cliente
       userAgent, // El User-Agent del cliente
+      body.email, // El email del usuario
+      body.contentIds,
+      body.contents,
+      body.numItems,
+      body.orderId,
     );
   }
 }

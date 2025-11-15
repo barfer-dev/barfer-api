@@ -30,16 +30,26 @@ export class MetaConversionsService {
     email: string,
     ip: string,
     userAgent: string,
+    // Nuevos parámetros
+    contentIds?: string[],
+    contents?: Array<{ id: string; quantity: number; item_price?: number }>,
+    numItems?: number,
+    contentCategory?: string,
+    eventId?: string, // Para deduplicación
   ) {
     const eventParams = {
       event_name: 'AddToCart',
       event_time: Math.floor(Date.now() / 1000),
       action_source: 'website',
-      event_id: productId,
+      event_id: eventId || productId, // Usar eventId único si se pasa
       custom_data: {
         currency: 'ARS',
         value: value,
         content_type: 'product',
+        content_ids: contentIds || [productId], // Array
+        contents: contents, // Detalles
+        num_items: numItems || 1,
+        content_category: contentCategory,
       },
       user_data: {
         client_ip_address: ip,
@@ -57,16 +67,26 @@ export class MetaConversionsService {
     email: string,
     ip: string,
     userAgent: string,
+    // Nuevos
+    contentIds?: string[],
+    contents?: Array<{ id: string; quantity: number; item_price?: number }>,
+    numItems?: number,
+    contentCategory?: string,
+    eventId?: string,
   ) {
     const eventParams = {
       event_name: 'ViewContent',
       event_time: Math.floor(Date.now() / 1000),
       action_source: 'website',
-      event_id: productId,
+      event_id: eventId || productId,
       custom_data: {
         currency: currency || 'ARS',
         value: value,
         content_type: 'product',
+        content_ids: contentIds || [productId],
+        contents: contents,
+        num_items: numItems || 1,
+        content_category: contentCategory,
       },
       user_data: {
         client_ip_address: ip,
@@ -83,6 +103,11 @@ export class MetaConversionsService {
     clientIp: string,
     userAgent: string,
     email: string,
+    // Nuevos
+    contentIds?: string[],
+    contents?: Array<{ id: string; quantity: number; item_price?: number }>,
+    numItems?: number,
+    orderId?: string,
   ) {
     const eventParams = {
       event_name: 'Purchase',
@@ -93,6 +118,10 @@ export class MetaConversionsService {
         currency: 'ARS',
         value: totalValue,
         content_type: 'product',
+        content_ids: contentIds, // Array de productos comprados
+        contents: contents, // Detalles de cada uno
+        num_items: numItems,
+        order_id: orderId || eventId, // ID de la orden
       },
       user_data: {
         client_ip_address: clientIp,
