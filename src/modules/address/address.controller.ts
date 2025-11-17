@@ -11,6 +11,8 @@ import { Auth } from '../auth/decorators/auth.decorator';
 import { Roles } from '../../common/enums/roles.enum';
 import { AddressDto } from './dto/address.dto';
 import { VerifyAddressDto } from './dto/verify-address.dto';
+import { AutocompleteAddressDto } from './dto/autocomplete-address.dto';
+import { AutocompleteAddressResponseDto } from './dto/autocomplete-address-response.dto';
 import { AddressService } from './address.service';
 import { GoogleMapsService } from './google-maps.service';
 
@@ -29,6 +31,19 @@ export class AddressController {
       : verifyAddressDto.address;
     
     return await this.googleMapsService.verifyAddress(fullAddress);
+  }
+
+  @Post('autocomplete')
+  @Auth(Roles.User)
+  async autocompleteAddress(
+    @Body() autocompleteAddressDto: AutocompleteAddressDto,
+  ): Promise<AutocompleteAddressResponseDto> {
+    const suggestions = await this.googleMapsService.autocompleteAddress(
+      autocompleteAddressDto.query,
+      autocompleteAddressDto.city,
+    );
+
+    return { suggestions };
   }
 
   @Post()

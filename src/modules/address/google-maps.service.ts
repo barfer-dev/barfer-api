@@ -19,11 +19,19 @@ export interface GoogleMapsVerifyResponse {
   isPartialMatch: boolean;
 }
 
+export interface AutocompleteSuggestion {
+  formatted_address: string;
+  components: GoogleMapsAddressComponent;
+  placeId?: string;
+}
+
 @Injectable()
 export class GoogleMapsService {
   private readonly logger = new Logger(GoogleMapsService.name);
   private readonly apiKey: string;
   private readonly baseUrl = 'https://maps.googleapis.com/maps/api/geocode/json';
+  private readonly placesAutocompleteUrl = 'https://maps.googleapis.com/maps/api/place/autocomplete/json';
+  private readonly placesDetailsUrl = 'https://maps.googleapis.com/maps/api/place/details/json';
 
   constructor(
     private readonly httpService: HttpService,
@@ -152,6 +160,137 @@ export class GoogleMapsService {
     }
 
     return components;
+  }
+
+  async autocompleteAddress(
+    query: string,
+    city?: string,
+  ): Promise<AutocompleteSuggestion[]> {
+    if (!this.apiKey) {
+      throw new BadRequestException(
+        'Google Maps API is not configured on the server',
+      );
+    }
+
+    try {
+      // Construir parámetros para la API de Autocomplete
+      const params = new URLSearchParams({
+        input: query,
+        key: this.apiKey,
+        language: 'es',
+        region: 'ar', // Argentina
+        types: 'address', // Solo direcciones
+      });
+
+      // Si hay ciudad, agregar filtro por componente
+      if (city) {
+        params.append('components', `country:ar|locality:${encodeURIComponent(city)}`);
+      } else {
+        params.append('components', 'country:ar');
+      }
+
+      const autocompleteUrl = `${this.placesAutocompleteUrl}?${params.toString()}`;
+
+      const autocompleteResponse = await firstValueFrom(
+        this.httpService.get(autocompleteUrl, {
+          timeout: 5000,
+        }),
+      );
+
+      const { data: autocompleteData } = autocompleteResponse;
+
+      // Verificar el estado de la respuesta
+      if (autocompleteData.status === 'REQUEST_DENIED') {
+        this.logger.error('Google Places API request denied:', autocompleteData.error_message);
+        throw new BadRequestException(
+          'Error en la configuración del servicio de búsqueda de direcciones.',
+        );
+      }
+
+      if (autocompleteData.status === 'OVER_QUERY_LIMIT') {
+        this.logger.error('Google Places API quota exceeded');
+        throw new BadRequestException(
+          'El servicio de búsqueda está temporalmente no disponible.',
+        );
+      }
+
+      if (
+        autocompleteData.status !== 'OK' ||
+        !autocompleteData.predictions ||
+        autocompleteData.predictions.length === 0
+      ) {
+        // Si no hay resultados, devolver array vacío en lugar de error
+        return [];
+      }
+
+      // Limitar a 5 sugerencias
+      const predictions = autocompleteData.predictions.slice(0, 5);
+
+      // Obtener detalles de cada predicción
+      const suggestions = await Promise.all(
+        predictions.map(async (prediction: any) => {
+          try {
+            const detailsParams = new URLSearchParams({
+              place_id: prediction.place_id,
+              key: this.apiKey,
+              language: 'es',
+            });
+
+            const detailsUrl = `${this.placesDetailsUrl}?${detailsParams.toString()}`;
+
+            const detailsResponse = await firstValueFrom(
+              this.httpService.get(detailsUrl, {
+                timeout: 5000,
+              }),
+            );
+
+            const { data: detailsData } = detailsResponse;
+
+            if (detailsData.status !== 'OK' || !detailsData.result) {
+              // Si falla obtener detalles, usar la descripción de la predicción
+              return {
+                formatted_address: prediction.description,
+                components: {},
+                placeId: prediction.place_id,
+              };
+            }
+
+            const result = detailsData.result;
+            const components = this.parseAddressComponents(
+              result.address_components || [],
+            );
+
+            return {
+              formatted_address: result.formatted_address || prediction.description,
+              components,
+              placeId: prediction.place_id,
+            };
+          } catch (error) {
+            this.logger.warn(
+              `Error getting details for place ${prediction.place_id}:`,
+              error.message,
+            );
+            // Si falla obtener detalles, devolver al menos la predicción básica
+            return {
+              formatted_address: prediction.description,
+              components: {},
+              placeId: prediction.place_id,
+            };
+          }
+        }),
+      );
+
+      return suggestions;
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+
+      this.logger.error('Error calling Google Places API:', error.message);
+      throw new BadRequestException(
+        'Error al buscar direcciones. Por favor, intenta nuevamente.',
+      );
+    }
   }
 }
 
