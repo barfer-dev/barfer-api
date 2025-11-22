@@ -12,10 +12,14 @@ import { Roles } from '../../common/enums/roles.enum';
 import { Auth } from '../auth/decorators/auth.decorator';
 import { ProductDto } from './dto/product.dto';
 import { ProductsService } from './products.service';
+import { GoogleSheetsService } from '../google-sheet/google-sheet.service';
 
 @Controller('products')
 export class ProductsController {
-  constructor(private readonly productsService: ProductsService) {}
+  constructor(
+    private readonly productsService: ProductsService,
+    private readonly googleSheetsService: GoogleSheetsService,
+  ) {}
 
   @Post('/new')
   @Auth(Roles.Admin)
@@ -71,5 +75,13 @@ export class ProductsController {
   @Get('feed/google-merchant')
   getGoogleMerchantFeed() {
     return this.productsService.getGoogleMerchantFeed();
+  }
+
+  @Post('add-to-sheet')
+  // @Auth(Roles.Admin)
+  async addToSheet(@Body() product: any) {
+    console.log('Producto recibido para agregar al sheet:', product);
+    await this.googleSheetsService.addProductToSheet(product);
+    return { message: 'Producto agregado al sheet' };
   }
 }

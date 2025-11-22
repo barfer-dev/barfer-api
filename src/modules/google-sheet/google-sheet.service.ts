@@ -116,6 +116,46 @@ export class GoogleSheetsService {
     return response.data.values;
   }
 
+  async addProductToSheet(product: any): Promise<void> {
+    try {
+      const spreadsheetId = this.configService.get<string>('GOOGLE_PRODUCT_SHEET_ID');
+      const range = 'Sheet1!A1:Z';
+
+      const response = await this.sheets.spreadsheets.values.get({
+        spreadsheetId,
+        range,
+      });
+
+      const existingValues = response.data.values;
+
+      // Verificar si el producto ya existe en el sheet
+      const productId = product.id || product._id;
+      if (existingValues && existingValues.length > 1) { // Si hay más de 1 fila, hay productos
+        const exists = existingValues.slice(1).some((row: any[]) => row[0] === productId);
+        if (exists) {
+          return;
+        }
+      }
+
+      const values = existingValues && existingValues.length > 0
+        ? this.getProductValues(product)
+        : this.getProductHeaderValues(product);
+
+      const resource = { values };
+      const newRange = `Sheet1!A${existingValues ? existingValues.length + 1 : 1}`;
+
+      await this.sheets.spreadsheets.values.append({
+        spreadsheetId,
+        range: newRange,
+        valueInputOption: 'RAW',
+        requestBody: resource,
+      });
+    } catch (error) {
+      console.error('Error al agregar producto al sheet:', error);
+      throw error;
+    }
+  }
+
   private getOrderValues(
     order: any,
     deliveryDate: string,
@@ -208,6 +248,64 @@ export class GoogleSheetsService {
         'Entre calles',
       ],
       ...this.getOrderValues(order, deliveryDate, time, STATUS, PAYMENT_METHOD),
+    ];
+  }
+
+  private formatProductForMerchant(product: any) {
+    const firstOption = product.options && product.options.length > 0 ? product.options[0] : null;
+
+    return {
+      id: product.id || product._id,
+      title: product.name,
+      description: product.description || '',
+      availability: (product.stock && product.stock > 0) || (firstOption && firstOption.stock > 0) ? 'in_stock' : 'out_of_stock',
+      'availability date': '',
+      'expiration date': '',
+      link: product.link || `https://www.barferalimento.com/product/${product.id || product._id}`,
+      'mobile link': '',
+      'image link': product.images && product.images.length > 0 ? product.images[0] : '',
+      price: firstOption ? `${firstOption.price} ARS` : (product.price ? `${product.price} ARS` : '0 ARS'),
+      'sale price': product.offerPrice ? `${product.offerPrice} ARS` : '',
+      'sale price effective date': '',
+      'identifier exists': 'no',
+      gtin: '',
+      mpn: '',
+      brand: product.category?.name || 'Barfer',
+      'product highlight': '',
+      'product detail': '',
+      'additional image link': product.images && product.images.length > 1 ? product.images.slice(1).join(', ') : '',
+      condition: 'new',
+      adult: 'no',
+      color: '',
+      size: firstOption ? firstOption.name : '',
+      'size type': '',
+      'size system': '',
+      gender: '',
+      material: '',
+      pattern: '',
+      'age group': product.category?.name?.toLowerCase().includes('gato') ? 'adult' : 'adult',
+      multipack: '',
+      'is bundle': 'no',
+      'unit pricing measure': firstOption ? `${firstOption.description?.split(' ')[0]} kg` : '',
+      'unit pricing base measure': '',
+      'energy efficiency class': '',
+      'min energy efficiency class': '',
+      'max energy efficiency class': '',
+      'item group id': product.id || product._id,
+      'sell on google quantity': firstOption ? firstOption.stock : (product.stock || 0),
+    };
+  }
+
+  private getProductValues(product: any) {
+    const formatted = this.formatProductForMerchant(product);
+    return [Object.values(formatted)];
+  }
+
+  private getProductHeaderValues(product: any) {
+    const formatted = this.formatProductForMerchant(product);
+    return [
+      Object.keys(formatted),
+      Object.values(formatted),
     ];
   }
 }

@@ -6,6 +6,7 @@ import { Product, ProductSchema } from '../../schemas/product.schema';
 import { CategoriesModule } from '../categories/categories.module';
 import { OptionsModule } from '../options/options.module';
 import { DiscountsModule } from '../discounts/discounts.module';
+import { GoogleSheetModule } from '../google-sheet/google-sheet.module';
 
 @Module({
   controllers: [ProductsController],
@@ -21,6 +22,7 @@ import { DiscountsModule } from '../discounts/discounts.module';
     forwardRef(() => OptionsModule),
     forwardRef(() => CategoriesModule),
     DiscountsModule,
+    GoogleSheetModule,
   ],
 })
 export class ProductsModule {}
