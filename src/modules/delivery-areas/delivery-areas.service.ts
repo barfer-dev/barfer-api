@@ -179,8 +179,10 @@ export class DeliveryAreasService {
   async searchAreaByAddress(
     address: string,
     currentDay: WeekDay,
+    zipCode?: string,
   ): Promise<SearchAreaResponseDto> {
     try {
+      // searchAreaByAddress called
       const apiKey = this.configService.get<string>('GOOGLE_MAPS_API_KEY');
       const response = await axios.get(
         `https://maps.googleapis.com/maps/api/geocode/json`,
@@ -188,11 +190,14 @@ export class DeliveryAreasService {
           params: {
             address: address,
             key: apiKey,
+            components: zipCode ? `postal_code:${zipCode}|country:AR` : undefined,
           },
         },
       );
 
-      if (response.data.results?.[0]?.geometry?.location) {
+  if (response.data.results?.[0]?.geometry?.location) {
+  // geocode result available
+  // console.debug(response.data.results[0]);
         const { lat, lng } = response.data.results[0].geometry.location;
         return this.searchAreaByCoordinates(lat, lng, currentDay);
       } else {
@@ -206,8 +211,9 @@ export class DeliveryAreasService {
     }
   }
 
-  async verifyAddressByString(address: string): Promise<VerifyAddressResponseDto> {
+  async verifyAddressByString(address: string, zipCode?: string): Promise<VerifyAddressResponseDto> {
     try {
+      // verifyAddressByString called
       const apiKey = this.configService.get<string>('GOOGLE_MAPS_API_KEY');
       
       // Agregar Buenos Aires al final si no está presente
@@ -224,7 +230,7 @@ export class DeliveryAreasService {
             address: searchAddress,
             key: apiKey,
             region: 'ar', // Bias hacia Argentina
-            components: 'country:AR', // Restringir a Argentina
+            components: zipCode ? `postal_code:${zipCode}|country:AR` : 'country:AR', // Restringir a Argentina y filtrar por postal_code si llega
           },
         },
       );

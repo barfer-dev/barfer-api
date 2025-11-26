@@ -14,6 +14,10 @@ export class SearchAreaRequestDto {
   @IsString()
   address?: string;
 
+  @IsOptional()
+  @IsString()
+  zipCode?: string;
+
   @IsEnum(WeekDay)
   currentDay: WeekDay;
 } 

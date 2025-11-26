@@ -62,12 +62,12 @@ export class DeliveryAreasController {
   async searchArea(
     @Body() searchAreaDto: SearchAreaRequestDto,
   ): Promise<SearchAreaResponseDto> {
-    const { lat, lon, address, currentDay } = searchAreaDto;
+    const { lat, lon, address, currentDay, zipCode } = searchAreaDto;
 
     if (lat !== undefined && lon !== undefined) {
       return this.deliveryAreasService.searchAreaByCoordinates(lat, lon, currentDay);
     } else if (address) {
-      return this.deliveryAreasService.searchAreaByAddress(address, currentDay);
+      return this.deliveryAreasService.searchAreaByAddress(address, currentDay, zipCode);
     } else {
       throw new BadRequestException(
         'Debe proporcionar latitud y longitud o una dirección.',
@@ -77,7 +77,8 @@ export class DeliveryAreasController {
 
   @Post('/verify')
   async verifyAddress(@Body() verifyAddressDto: VerifyAddressDto): Promise<VerifyAddressResponseDto> {
-    const result = await this.deliveryAreasService.verifyAddressByString(verifyAddressDto.address);
+    const { address, zipCode } = verifyAddressDto;
+    const result = await this.deliveryAreasService.verifyAddressByString(address, zipCode);
     return result;
   }
 }
