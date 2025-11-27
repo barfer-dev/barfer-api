@@ -71,6 +71,12 @@ export class Order {
   couponDiscount?: number;
 
   @Prop({
+    required: false,
+    default: 0,
+  })
+  discount?: number;
+
+  @Prop({
     isOptional: true,
   })
   deliveryArea?: DeliveryAreaDto;

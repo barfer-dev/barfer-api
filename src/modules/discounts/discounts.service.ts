@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Discount, DiscountDocument } from '../../schemas/discount.schema';
 import { OptionDocument } from '../../schemas/option.schema';
+import { Product } from '../../schemas/product.schema';
 import { OptionsService } from '../options/options.service';
 import { CreateDiscountDto } from './dto/create-discount.dto';
 import { UpdateDiscountDto } from './dto/update-discount.dto';
@@ -12,6 +13,8 @@ export class DiscountsService {
   constructor(
     @InjectModel(Discount.name)
     private discountModel: Model<DiscountDocument>,
+    @InjectModel(Product.name)
+    private productModel: Model<Product>,
     private optionsService: OptionsService,
   ) {}
 
@@ -174,8 +177,21 @@ export class DiscountsService {
    */
   async getOptionPrice(optionId: string) {
     const option = await this.optionsService.findOne(optionId) as OptionDocument;
+    
+    // Obtener el producto para verificar si tiene offerPrice a nivel de producto
+    const product = await this.productModel.findById(option.productId).exec();
+    
+    // Prioridad: product.offerPrice > option.offerPrice > option.price
+    let effectivePrice = option.price;
+    if (option.offerPrice && option.offerPrice > 0) {
+      effectivePrice = option.offerPrice;
+    }
+    if (product && product.offerPrice && product.offerPrice > 0) {
+      effectivePrice = product.offerPrice;
+    }
+    
     return {
-      price: option.price,
+      price: effectivePrice,
       name: option.name,
       id: option._id,
     };

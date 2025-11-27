@@ -102,7 +102,12 @@ export class OrdersService {
         createOrderDto.paymentMethod,
       );
 
-
+    console.log('=== DEBUG DESCUENTOS ===');
+    console.log('Cupón:', coupon);
+    console.log('Descuentos calculados:', JSON.stringify(discounts, null, 2));
+    console.log('Total discount:', discounts.totalDiscount);
+    console.log('Coupon discount:', discounts.couponDiscount);
+    console.log('Coupon discount amount:', discounts.couponDiscount?.amount);
 
 
       const itemsWithEffectivePrice = await Promise.all(
@@ -862,8 +867,10 @@ export class OrdersService {
               applicableProduct.quantity,
               coupon.maxAplicableUnits || applicableProduct.quantity, // Aplica hasta la cantidad máxima definida
             );
+            // Usar offerPrice si está disponible y es mayor a 0, sino usar el precio normal
+            const effectivePrice = (option.offerPrice && option.offerPrice > 0) ? option.offerPrice : option.price;
             discount =
-              ((option.price * coupon.value) / 100) * unidadesAplicables;
+              ((effectivePrice * coupon.value) / 100) * unidadesAplicables;
           }
         }
       } else {
@@ -872,7 +879,9 @@ export class OrdersService {
           const cartProduct = cartDto.products.find(
             (product) => product.optionId === option._id.toString(),
           );
-          return sum + option.price * cartProduct.quantity;
+          // Usar offerPrice si está disponible y es mayor a 0, sino usar el precio normal
+          const effectivePrice = (option.offerPrice && option.offerPrice > 0) ? option.offerPrice : option.price;
+          return sum + effectivePrice * cartProduct.quantity;
         }, 0);
         discount = (totalOrderValue * coupon.value) / 100;
       }

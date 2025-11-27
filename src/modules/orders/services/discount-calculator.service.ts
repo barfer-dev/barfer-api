@@ -22,30 +22,41 @@ export class DiscountCalculatorService {
     cart: CartDto,
     paymentMethod: number,
   ): Promise<OrderDiscounts> {
+    console.log('=== INICIO CÁLCULO DESCUENTOS ===');
+    console.log('Cart:', JSON.stringify(cart, null, 2));
+    console.log('Payment method:', paymentMethod, '(', PaymentMethods[paymentMethod], ')');
+
     // Primero calculamos los descuentos por producto
     const productDiscounts = await this.calculateProductDiscounts(cart);
     const productDiscountsTotal = this.sumDiscounts(productDiscounts);
+    console.log('Descuentos por producto:', productDiscountsTotal);
 
     // Calculamos el subtotal inicial
     const subtotal = await this.calculateSubtotal(cart);
+    console.log('Subtotal inicial:', subtotal);
     
     // Calculamos el descuento por cupón
     const couponDiscount = await this.calculateCouponDiscount(cart);
+    console.log('Descuento por cupón:', couponDiscount);
 
     // Calculamos el subtotal después de todos los descuentos (productos y cupón)
     const subtotalAfterDiscounts = +(subtotal - productDiscountsTotal - (couponDiscount?.amount || 0)).toFixed(2);
+    console.log('Subtotal después de descuentos:', subtotalAfterDiscounts);
 
     // Por último calculamos el descuento en efectivo sobre el nuevo subtotal
     const cashDiscount = await this.calculateCashPaymentDiscount(
       subtotalAfterDiscounts,
       paymentMethod,
     );
+    console.log('Descuento por efectivo:', cashDiscount);
 
     const totalDiscount = +(
       productDiscountsTotal +
       (couponDiscount?.amount || 0) +
       (cashDiscount?.amount || 0)
     ).toFixed(2);
+    console.log('Descuento total:', totalDiscount);
+    console.log('=== FIN CÁLCULO DESCUENTOS ===');
 
     return {
       productDiscounts,

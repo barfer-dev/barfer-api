@@ -3,6 +3,7 @@ import { CouponsService } from './coupons.service';
 import { CouponsController } from './coupons.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { CouponSchema, Coupon } from '../../schemas/coupon.schema';
+import { Product, ProductSchema } from '../../schemas/product.schema';
 import { PaginationModule } from '../pagination/pagination.module';
 import { ProductsModule } from '../products/products.module';
 import { OptionsModule } from '../options/options.module';
@@ -15,6 +16,10 @@ import { OptionsModule } from '../options/options.module';
       {
         name: Coupon.name,
         schema: CouponSchema,
+      },
+      {
+        name: Product.name,
+        schema: ProductSchema,
       },
     ]),
     PaginationModule,
