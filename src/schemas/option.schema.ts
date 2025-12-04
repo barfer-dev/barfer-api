@@ -33,6 +33,16 @@ export class Option {
   offerPrice?: number;
 
   @Prop({
+    required: false,
+  })
+  flavor?: string;
+
+  @Prop({
+    required: false,
+  })
+  weight?: string;
+
+  @Prop({
     required: true,
   })
   productId: string;

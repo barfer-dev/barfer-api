@@ -19,6 +19,16 @@ export class OptionDto {
   @IsNumber()
   stock: number;
 
+  @Transform(({ value }) => value?.trim())
+  @IsString()
+  @IsOptional()
+  flavor?: string;
+
+  @Transform(({ value }) => value?.trim())
+  @IsString()
+  @IsOptional()
+  weight?: string;
+
   @IsNumber()
   @IsOptional()
   quantity?: number;
