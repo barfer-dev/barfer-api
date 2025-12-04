@@ -112,11 +112,22 @@ export class OrdersService {
 
       const itemsWithEffectivePrice = await Promise.all(
         createOrderDto.items.map(async (item) => {
+          // Extraer el ID real del producto (remover sufijo si existe, ej: "id-FLAVOR" -> "id")
+          const actualProductId = item.productId.split('-')[0];
           const optionDto = item.options[0];
-          const product = await this.productsService.findOneById(item.productId);
+          const product = await this.productsService.findOneById(actualProductId);
+          
+          if (!product) {
+            throw new Error(`Producto ${actualProductId} no encontrado`);
+          }
+          
+          if (!product.options || product.options.length === 0) {
+            throw new Error(`El producto ${actualProductId} no tiene opciones disponibles`);
+          }
+          
           const option = product.options.find((o) => o?._id?.toString() === optionDto.id);
           if (!option) {
-            throw new Error(`Opción ${optionDto.id} no encontrada para el producto ${item.productId}`);
+            throw new Error(`Opción ${optionDto.id} no encontrada para el producto ${actualProductId}`);
           }
     
   
@@ -133,7 +144,7 @@ export class OrdersService {
           //       : option.price);
 
           return {
-            productId: item.productId,
+            productId: actualProductId, // Usar el ID real sin sufijo
             name: product.name,
             description: product.description,
             images: product.images,
@@ -448,8 +459,10 @@ export class OrdersService {
   async buildProductsOrder(products: any): Promise<ProductDto[]> {
     const productsOrder: ProductDto[] = [];
     for await (const product of products) {
+      // Extraer el ID real del producto (remover sufijo si existe)
+      const actualProductId = product.productId.split('-')[0];
       const productFromDb = await this.productsService.findOneById(
-        product.productId,
+        actualProductId,
       );
 
       const optionsFromDb = [];
@@ -686,7 +699,9 @@ export class OrdersService {
 
   async validateStock(products: any[]) {
     for await (const product of products) {
-      await this.productsService.findOneById(product.productId);
+      // Extraer el ID real del producto (remover sufijo si existe)
+      const actualProductId = product.productId.split('-')[0];
+      await this.productsService.findOneById(actualProductId);
 
       for await (const option of product.options) {
         const optionFromDb = await this.optionsService.findOne(option.id);
