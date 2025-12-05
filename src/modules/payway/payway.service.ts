@@ -17,7 +17,8 @@ export class PaywayService {
     this.privateApiKey = this.configService.get<string>('PAYWAY_PRIVATE_API_KEY') || '';
 
     // Initialize Payway SDK (class, not function)
-    const environment = this.configService.get<string>('NODE_ENV') === 'production' ? 'production' : 'developer';
+    // Forzado a usar siempre production
+    const environment = 'production';
     const company = 'Barfer'; // Puedes personalizar este valor
     const user = 'Backend';   // Puedes personalizar este valor
     this.sdkInstance = new sdkModulo.sdk(environment, this.publicApiKey, this.privateApiKey, company, user);
