@@ -36,8 +36,10 @@ export class PaywayService {
       );
     }
     const paymentData = {
+      customer: createPaymentDto.customer,
       site_transaction_id: createPaymentDto.site_transaction_id,
       token: createPaymentDto.token,
+      establishment_name: createPaymentDto.establishment_name,
       payment_method_id: createPaymentDto.payment_method_id,
       bin: createPaymentDto.bin,
       amount: createPaymentDto.amount,
@@ -48,8 +50,6 @@ export class PaywayService {
       sub_payments: createPaymentDto.sub_payments,
       site_id: createPaymentDto.site_id,
       fraud_detection: createPaymentDto.fraud_detection, // Este campo debe venir del frontend
-      apiKey: this.privateApiKey,
-      'Content-Type': 'application/json'
     };
 
     // Verificar que la instancia tiene el método payment

@@ -5,6 +5,19 @@ export class CreatePaymentDto {
   @IsString()
   @IsOptional()
   user_id?: string;
+
+  @IsObject()
+  @IsOptional()
+  customer?: {
+    id: string;
+    email: string;
+    ip_address?: string;
+  };
+
+  @IsString()
+  @IsOptional()
+  establishment_name?: string;
+
   @IsString()
   @IsNotEmpty()
   site_transaction_id: string;
