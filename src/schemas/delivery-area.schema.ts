@@ -40,6 +40,9 @@ export class DeliveryArea {
 
   @Prop({ default: true })
   enabled: boolean;
+
+  @Prop({ required: false })
+  puntoEnvio?: string;
 }
 
 export const DeliveryAreaSchema = SchemaFactory.createForClass(DeliveryArea);

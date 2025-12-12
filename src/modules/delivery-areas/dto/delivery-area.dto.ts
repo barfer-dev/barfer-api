@@ -48,4 +48,8 @@ export class DeliveryAreaDto {
   @IsOptional()
   @IsString()
   sheetName?: string;
+
+  @IsOptional()
+  @IsString()
+  puntoEnvio?: string;
 }

@@ -104,6 +104,12 @@ export class Order {
     required: false,
   })
   whatsappContactedAt?: string;
+
+  // New field: puntoEnvio
+  @Prop({
+    required: false,
+  })
+  puntoEnvio?: string;
 }
 
 export const OrderSchema = SchemaFactory.createForClass(Order);

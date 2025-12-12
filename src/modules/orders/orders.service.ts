@@ -322,6 +322,7 @@ export class OrdersService {
       deliveryDate: deliveryDate, // Guardar la fecha de entrega en la orden
       deliveryDay: deliveryDay, // Guardar la fecha de entrega como Date
       couponDiscount, // Guardar el descuento del cupón
+      puntoEnvio: deliveryArea?.puntoEnvio, // Copiar puntoEnvio de la zona de entrega
     };
 
     return barferOrder;
@@ -576,6 +577,7 @@ export class OrdersService {
       sameDayDelivery: deliveryArea.sameDayDelivery,
       whatsappNumber: deliveryArea.whatsappNumber,
       sameDayDeliveryDays: deliveryArea.sameDayDeliveryDays,
+      puntoEnvio: deliveryArea.puntoEnvio,
     };
     return deliveryAreaOrder;
   }
