@@ -62,7 +62,7 @@ export class OrdersService {
     private readonly mailerService: MailerService,
     private readonly metaConversionsService: MetaConversionsService,
     private readonly discountCalculatorService: DiscountCalculatorService,
-  ) {}
+  ) { }
 
   /**
    * Crea una nueva orden
@@ -110,64 +110,64 @@ export class OrdersService {
     console.log('Coupon discount amount:', discounts.couponDiscount?.amount);
 
 
-      const itemsWithEffectivePrice = await Promise.all(
-        createOrderDto.items.map(async (item) => {
-          const optionDto = item.options[0];
-          const product = await this.productsService.findOneById(item.productId);
-          const option = product.options.find((o) => o?._id?.toString() === optionDto.id);
-          if (!option) {
-            throw new Error(`Opción ${optionDto.id} no encontrada para el producto ${item.productId}`);
-          }
-    
-  
-          const effectiveUnitPrice =
-            (product.offerPrice && product.offerPrice > 0)
-              ? product.offerPrice
-              : option.price;
-    
-          // const effectiveUnitPrice =
-          // (typeof optionDto.unitPrice === "number" && optionDto.unitPrice > 0)
-          //   ? optionDto.unitPrice
-          //   : ((typeof product.offerPrice === "number" && product.offerPrice > 0)
-          //       ? product.offerPrice
-          //       : option.price);
+    const itemsWithEffectivePrice = await Promise.all(
+      createOrderDto.items.map(async (item) => {
+        const optionDto = item.options[0];
+        const product = await this.productsService.findOneById(item.productId);
+        const option = product.options.find((o) => o?._id?.toString() === optionDto.id);
+        if (!option) {
+          throw new Error(`Opción ${optionDto.id} no encontrada para el producto ${item.productId}`);
+        }
 
-          return {
-            productId: item.productId,
-            name: product.name,
-            description: product.description,
-            images: product.images,
-            options: [
-              {
-                id: option._id,
-                name: option.name,
-                description: option.description,
-                quantity: optionDto.quantity,
-                price: effectiveUnitPrice, // este es el que se persiste y se usa para totales
-              },
-            ],
-            price: effectiveUnitPrice, // opcional, si tu schema lo usa a nivel producto
-            salesCount: product.salesCount ?? 0,
-          };
-        })
-      );
-    
-      // Construir la orden con los descuentos calculados
-      const barferOrder = await this.buildBarferOrder(
-        // pasamos los items ya con price efectivo
-        itemsWithEffectivePrice,
-        address,
-        user,
-        createOrderDto.notes,
-        createOrderDto.paymentMethod,
-        createOrderDto.shippingPrice,
-        OrderStatus[1],
-        coupon,
-        deliveryArea,
-        discounts.totalDiscount,
-        createOrderDto.deliveryDate,
-        discounts.couponDiscount?.amount || 0,
-      );
+
+        const effectiveUnitPrice =
+          (product.offerPrice && product.offerPrice > 0)
+            ? product.offerPrice
+            : option.price;
+
+        // const effectiveUnitPrice =
+        // (typeof optionDto.unitPrice === "number" && optionDto.unitPrice > 0)
+        //   ? optionDto.unitPrice
+        //   : ((typeof product.offerPrice === "number" && product.offerPrice > 0)
+        //       ? product.offerPrice
+        //       : option.price);
+
+        return {
+          productId: item.productId,
+          name: product.name,
+          description: product.description,
+          images: product.images,
+          options: [
+            {
+              id: option._id,
+              name: option.name,
+              description: option.description,
+              quantity: optionDto.quantity,
+              price: effectiveUnitPrice, // este es el que se persiste y se usa para totales
+            },
+          ],
+          price: effectiveUnitPrice, // opcional, si tu schema lo usa a nivel producto
+          salesCount: product.salesCount ?? 0,
+        };
+      })
+    );
+
+    // Construir la orden con los descuentos calculados
+    const barferOrder = await this.buildBarferOrder(
+      // pasamos los items ya con price efectivo
+      itemsWithEffectivePrice,
+      address,
+      user,
+      createOrderDto.notes,
+      createOrderDto.paymentMethod,
+      createOrderDto.shippingPrice,
+      OrderStatus[1],
+      coupon,
+      deliveryArea,
+      discounts.totalDiscount,
+      createOrderDto.deliveryDate,
+      discounts.couponDiscount?.amount || 0,
+    );
 
     const orderSchema = await this.orderModel.create(barferOrder);
     const orderSaved = await orderSchema.save();
@@ -460,8 +460,8 @@ export class OrdersService {
           typeof op.price === 'number' && op.price > 0
             ? op.price
             : (option.offerPrice && option.offerPrice > 0
-                ? option.offerPrice
-                : option.price);
+              ? option.offerPrice
+              : option.price);
 
         optionsFromDb.push({
           _id: op.id,
@@ -906,17 +906,21 @@ export class OrdersService {
 
     try {
       if (trimmed.includes(' de ')) {
-        // Formato "18/09 de 13.30hs a 17hs" -> Date
+        // Formato "18/09/2026 de 13.30hs a 17hs" -> Date
         const [datePart] = trimmed.split(' de ');
-        const [day, month] = datePart.split('/');
-        const dateString = `${currentYear}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+        const [day, month, year] = datePart.split('/');
+
+        const targetYear = year ? year : currentYear;
+        const dateString = `${targetYear}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
         const deliveryDay = new Date(dateString);
 
         return isNaN(deliveryDay.getTime()) ? null : deliveryDay;
       } else if (trimmed.includes('/')) {
-        // Formato solo "28/06" -> Date
-        const [day, month] = trimmed.split('/');
-        const dateString = `${currentYear}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+        // Formato "28/06/2026" o "28/06" -> Date
+        const [day, month, year] = trimmed.split('/');
+
+        const targetYear = year ? year : currentYear;
+        const dateString = `${targetYear}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
         const deliveryDay = new Date(dateString);
 
         return isNaN(deliveryDay.getTime()) ? null : deliveryDay;
