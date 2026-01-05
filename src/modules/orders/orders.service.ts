@@ -358,12 +358,12 @@ export class OrdersService {
       external_reference: orderSaved?._id.toString(),
       back_urls: {
         success:
-          'https://barf-ecommerce-client.vercel.app/carrito/pago-exitoso?orderId=' +
+          'https://www.barferalimento.com/carrito/pago-exitoso?orderId=' +
           orderSaved?._id,
         pending:
-          'https://barf-ecommerce-client.vercel.app/carrito/pago-erroneo',
+          'https://www.barferalimento.com/carrito/pago-erroneo',
         failure:
-          'https://barf-ecommerce-client.vercel.app/carrito/pago-erroneo',
+          'https://www.barferalimento.com/carrito/pago-erroneo',
       },
     };
 
