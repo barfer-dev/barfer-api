@@ -177,7 +177,7 @@ export class OrdersService {
       await this.updateCouponUsage(coupon, userId);
     }
 
-    // Si es pago por transferencia y entrega en el día
+    // Si es pago por transferencia y entrega en el día (esto ya no debería usarse, pero lo mantenemos por compatibilidad)
     if (
       PaymentMethods[createOrderDto.paymentMethod] === PaymentMethods[9] &&
       deliveryArea.sameDayDelivery
@@ -212,7 +212,15 @@ export class OrdersService {
         discounts.totalDiscount,
       );
 
-      await this.googleSheetsService.addOrderToSheet(orderSaved);
+      // Si es sameDayDelivery, agregar a la hoja de la zona correspondiente
+      if (deliveryArea.sameDayDelivery) {
+        await this.deliverySheetService.addOrderToZoneSheet(
+          orderSaved,
+          deliveryArea.sheetName,
+        );
+      } else {
+        await this.googleSheetsService.addOrderToSheet(orderSaved);
+      }
 
       return {
         MPOrder: mpOrder,
