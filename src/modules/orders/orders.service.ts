@@ -232,10 +232,21 @@ export class OrdersService {
     await this.googleSheetsService.addOrderToSheet(orderSaved);
     await this.googleSheetsService.verifyDataInSheet();
 
-    // Registrar conversión en Meta
+    // Registrar conversión en Meta Conversions API
     try {
       const totalValue = barferOrder.items.reduce(
         (acc, item) => acc + item.options[0].price * item.options[0].quantity,
+        0,
+      );
+
+      const contentIds = barferOrder.items.map((item) => String(item.id));
+      const contents = barferOrder.items.map((item) => ({
+        id: String(item.id),
+        quantity: item.options[0].quantity,
+        item_price: item.options[0].price,
+      }));
+      const numItems = barferOrder.items.reduce(
+        (acc, item) => acc + item.options[0].quantity,
         0,
       );
 
@@ -245,6 +256,10 @@ export class OrdersService {
         clientIp,
         userAgent,
         orderSaved.user.email,
+        contentIds,
+        contents,
+        numItems,
+        String(orderSaved._id),
       );
     } catch (error) {
       console.error(
