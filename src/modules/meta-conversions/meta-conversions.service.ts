@@ -36,8 +36,8 @@ interface MetaEventParams {
 @Injectable()
 export class MetaConversionsService {
   private readonly logger = new Logger(MetaConversionsService.name);
-  
-  constructor(private readonly configService: ConfigService) {}
+
+  constructor(private readonly configService: ConfigService) { }
 
   private readonly pixelId = '472718221706195';
 
@@ -45,18 +45,24 @@ export class MetaConversionsService {
     try {
       this.logger.log(`Enviando evento ${eventParams.event_name} a Meta Conversions API`);
       this.logger.debug(`Event ID: ${eventParams.event_id}`);
-      
+
+      const accessToken = this.configService.get('META_ACCESS_TOKEN');
       const response = await axios.post(
-        `https://graph.facebook.com/v13.0/${this.pixelId}/events?access_token=${this.configService.get('META_ACCESS_TOKEN')}`,
-        { data: [eventParams] },
+        `https://graph.facebook.com/v24.0/${this.pixelId}/events?access_token=${accessToken}`,
+        {
+          data: [eventParams]
+        },
         { headers: { 'Content-Type': 'application/json' } },
       );
 
       this.logger.log(`Evento ${eventParams.event_name} enviado exitosamente`);
       return response.data;
     } catch (error) {
-      this.logger.error(`Error enviando evento a Meta API: ${error.message}`, error.stack);
-      throw new Error('Error enviando evento a Meta API');
+      this.logger.error(`Error enviando evento a Meta API: ${error.message}`);
+      if (error.response?.data) {
+        this.logger.error('Respuesta de Meta API:', JSON.stringify(error.response.data, null, 2));
+      }
+      throw new Error(`Error enviando evento a Meta API: ${error.message}`);
     }
   }
 
@@ -174,7 +180,7 @@ export class MetaConversionsService {
         userData,
       }),
     };
-    
+
     return this.sendEventToMeta(eventParams);
   }
 
@@ -230,7 +236,7 @@ export class MetaConversionsService {
         userData,
       }),
     };
-    
+
     return this.sendEventToMeta(eventParams);
   }
 
