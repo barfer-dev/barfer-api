@@ -66,7 +66,7 @@ export class MailerService {
   }
 
   async sendWelcomeEmail(userEmail: string, userName: string) {
-    const subject = '¡Bienvenido a Barfer!';
+    const subject = '¡Bienvenido a Raw!';
     const frontendUrl = this.configService.get<string>('FRONTEND_BASE_URL');
     const logoAttachments = this.getLogoAsAttachment();
 

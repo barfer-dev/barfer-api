@@ -6,6 +6,7 @@ import { ProductsModule } from '../products/products.module';
 import { AddressModule } from '../address/address.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Order, OrderSchema } from '../../schemas/order.schema';
+import { PuntoEnvio, PuntoEnvioSchema } from '../../schemas/punto-envio.schema';
 import { OptionsModule } from '../options/options.module';
 import { MercadoPagoModule } from '../mercado-pago/mercado-pago.module';
 import { CouponsModule } from '../coupons/coupons.module';
@@ -26,6 +27,10 @@ import { DiscountsModule } from '../discounts/discounts.module';
         name: Order.name,
         schema: OrderSchema,
       },
+      {
+        name: PuntoEnvio.name,
+        schema: PuntoEnvioSchema,
+      },
     ]),
     UsersModule,
     ProductsModule,
@@ -40,4 +45,4 @@ import { DiscountsModule } from '../discounts/discounts.module';
   ],
   exports: [OrdersService],
 })
-export class OrdersModule {}
+export class OrdersModule { }

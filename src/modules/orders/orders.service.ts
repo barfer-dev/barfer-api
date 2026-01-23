@@ -16,6 +16,7 @@ import { PaymentMethods } from '../../common/enums/payment-methods.enum';
 import { Coupon } from '../../schemas/coupon.schema';
 import { Option } from '../../schemas/option.schema';
 import { Order } from '../../schemas/order.schema';
+import { PuntoEnvio } from '../../schemas/punto-envio.schema';
 import { AddressService } from '../address/address.service';
 import { AddressDto } from '../address/dto/address.dto';
 import { CouponsService } from '../coupons/coupons.service';
@@ -47,6 +48,7 @@ import { DiscountCalculatorService } from './services/discount-calculator.servic
 export class OrdersService {
   constructor(
     @InjectModel(Order.name) private readonly orderModel: Model<Order>,
+    @InjectModel(PuntoEnvio.name) private readonly puntoEnvioModel: Model<PuntoEnvio>,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     private readonly usersService: UsersService,
     private readonly productsService: ProductsService,
@@ -152,6 +154,24 @@ export class OrdersService {
       })
     );
 
+
+
+    // -- LOGIC CUTOFF TIME START --
+    let finalDeliveryDate = createOrderDto.deliveryDate;
+    if (deliveryArea.puntoEnvio) {
+      const puntoEnvio = await this.puntoEnvioModel
+        .findOne({ nombre: deliveryArea.puntoEnvio })
+        .exec();
+
+      if (puntoEnvio && puntoEnvio.cutoffTime) {
+        finalDeliveryDate = this.applyCutoffLogic(
+          finalDeliveryDate,
+          puntoEnvio.cutoffTime,
+        );
+      }
+    }
+    // -- LOGIC CUTOFF TIME END --
+
     // Construir la orden con los descuentos calculados
     const barferOrder = await this.buildBarferOrder(
       // pasamos los items ya con price efectivo
@@ -165,7 +185,7 @@ export class OrdersService {
       coupon,
       deliveryArea,
       discounts.totalDiscount,
-      createOrderDto.deliveryDate,
+      finalDeliveryDate,
       discounts.couponDiscount?.amount || 0,
     );
 
@@ -956,5 +976,68 @@ export class OrdersService {
     }
 
     return null;
+  }
+
+
+  private applyCutoffLogic(deliveryDateStr: string, cutoffTime: string): string {
+    // 1. Check Cutoff
+    const [cutoffHour, cutoffMinute] = cutoffTime.split(':').map(Number);
+    const now = new Date();
+    const formatter = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'America/Argentina/Buenos_Aires',
+      hour: 'numeric',
+      minute: 'numeric',
+      hour12: false,
+      year: 'numeric',
+      month: 'numeric',
+      day: 'numeric',
+    });
+
+    // Extract parts
+    const parts = formatter.formatToParts(now);
+    const getPart = (type: string) =>
+      parseInt(parts.find((p) => p.type === type)?.value || '0');
+
+    const currentHour = getPart('hour');
+    const currentMinute = getPart('minute');
+    const currentYear = getPart('year');
+    const currentMonth = getPart('month'); // 1-based
+    const currentDay = getPart('day');
+
+    const isAfterCutoff =
+      currentHour > cutoffHour ||
+      (currentHour === cutoffHour && currentMinute >= cutoffMinute);
+
+    if (!isAfterCutoff) {
+      return deliveryDateStr;
+    }
+
+    // 2. Check if deliveryDateStr is "Today"
+    const parsedDate = this.parseDeliveryDateToDay(deliveryDateStr);
+    if (!parsedDate) return deliveryDateStr; // Cannot parse, ignore
+
+    // Compare parsedDate (UTC 00:00) with Argentina Today (UTC 00:00 constructed)
+    const todayArg = new Date(
+      Date.UTC(currentYear, currentMonth - 1, currentDay),
+    );
+
+    // parsedDate is constructed in parseDeliveryDateToDay via 'YYYY-MM-DD' which is UTC.
+    if (parsedDate.getTime() === todayArg.getTime()) {
+      // It is today. Shift to next working day.
+      const nextDate = new Date(todayArg);
+      nextDate.setUTCDate(nextDate.getUTCDate() + 1);
+      if (nextDate.getUTCDay() === 0) {
+        // Sunday -> Monday
+        nextDate.setUTCDate(nextDate.getUTCDate() + 1);
+      }
+
+      // Format back to DD/MM/YYYY
+      const dd = String(nextDate.getUTCDate()).padStart(2, '0');
+      const mm = String(nextDate.getUTCMonth() + 1).padStart(2, '0');
+      const yyyy = nextDate.getUTCFullYear();
+      return `${dd}/${mm}/${yyyy}`;
+    }
+
+    return deliveryDateStr;
   }
 }
