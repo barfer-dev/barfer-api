@@ -100,6 +100,9 @@ export class DeliverySheetService {
     const nextRow = (response.data.values?.length || 1) + 1;
     const orderValues = this.formatOrderValues(order);
 
+    // Asegurar que la hoja tenga suficientes filas
+    await this.ensureSheetHasEnoughRows(spreadsheetId, pageName, nextRow);
+
     // Actualizar valores y aplicar validaciones en una sola operación
     const requests = [
       {
@@ -221,6 +224,42 @@ export class DeliverySheetService {
 
     if (!sheet) throw new Error(`Sheet ${sheetName} not found`);
     return sheet.properties.sheetId;
+  }
+
+  private async ensureSheetHasEnoughRows(
+    spreadsheetId: string,
+    sheetName: string,
+    requiredRow: number,
+  ): Promise<void> {
+    const sheetsResponse = await this.sheets.spreadsheets.get({
+      spreadsheetId,
+    });
+
+    const sheet = sheetsResponse.data.sheets.find(
+      (s: any) => s.properties.title === sheetName,
+    );
+
+    if (!sheet) return;
+
+    const currentMaxRows = sheet.properties.gridProperties.rowCount;
+
+    if (requiredRow > currentMaxRows) {
+      const rowsToAdd = requiredRow - currentMaxRows + 100; // Add 100 extra rows as buffer
+      await this.sheets.spreadsheets.batchUpdate({
+        spreadsheetId,
+        requestBody: {
+          requests: [
+            {
+              appendDimension: {
+                sheetId: sheet.properties.sheetId,
+                dimension: 'ROWS',
+                length: rowsToAdd,
+              },
+            },
+          ],
+        },
+      });
+    }
   }
 
   private formatOrderValues(order: any): any[] {
