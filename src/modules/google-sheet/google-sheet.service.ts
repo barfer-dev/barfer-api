@@ -49,12 +49,12 @@ export class GoogleSheetsService {
       existingValues && existingValues.length > 0
         ? this.getOrderValues(order, deliveryDate, time, STATUS, PAYMENT_METHOD)
         : this.getHeaderValues(
-            order,
-            deliveryDate,
-            time,
-            STATUS,
-            PAYMENT_METHOD,
-          );
+          order,
+          deliveryDate,
+          time,
+          STATUS,
+          PAYMENT_METHOD,
+        );
 
     const resource = { values };
     const newRange = `hoja!A${existingValues ? existingValues.length + 1 : 1}`;
@@ -79,8 +79,9 @@ export class GoogleSheetsService {
 
     const rows = response.data.values;
 
-    // Buscar la fila correspondiente al orderId
-    const rowIndex = rows.findIndex((row) => row[0] === orderId);
+    // Buscar la fila correspondiente al orderId (comparar como strings)
+    const searchId = String(orderId).trim();
+    const rowIndex = rows.findIndex((row) => String(row[0]).trim() === searchId);
 
     if (rowIndex === -1) {
       throw new Error(`Order with ID ${orderId} not found.`);
@@ -178,7 +179,7 @@ export class GoogleSheetsService {
 
     return [
       [
-        order._id,
+        String(order._id),
         moment(order.createdAt).locale('es').format('DD/MM'),
         deliveryDate,
         `${time}`,
@@ -186,19 +187,17 @@ export class GoogleSheetsService {
         `${order.address.floorNumber ? 'Sí' : 'No'}`,
         address,
         `${order.address.reference !== undefined ? order.address.reference : ' '}`,
-        `${
-          order.address.floorNumber !== undefined &&
+        `${order.address.floorNumber !== undefined &&
           order.address.floorNumber !== 'null' &&
           order.address.floorNumber !== null
-            ? order.address.floorNumber
-            : ' '
+          ? order.address.floorNumber
+          : ' '
         }`,
-        `${
-          order.address.departmentNumber !== undefined &&
+        `${order.address.departmentNumber !== undefined &&
           order.address.departmentNumber !== 'null' &&
           order.address.departmentNumber !== null
-            ? order.address.departmentNumber
-            : ' '
+          ? order.address.departmentNumber
+          : ' '
         }`,
         `${order.user.phoneNumber || order.address.phone || ' '}`,
         order.user.email,
@@ -209,11 +208,10 @@ export class GoogleSheetsService {
         order.notes !== undefined && order.notes.trim() !== ''
           ? order.notes
           : ' ',
-        `${
-          order.address.betweenStreets !== undefined &&
+        `${order.address.betweenStreets !== undefined &&
           order.address.betweenStreets.trim() !== ''
-            ? `Entre calles: ${order.address.betweenStreets}`
-            : ' '
+          ? `Entre calles: ${order.address.betweenStreets}`
+          : ' '
         }`,
       ],
     ];
