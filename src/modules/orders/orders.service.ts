@@ -440,15 +440,19 @@ export class OrdersService {
       // Actualizar el descuento restante
       remainingDiscount -= discountForItem;
 
+      const safeDescription = item.description
+        ? String(item.description).substring(0, 256)
+        : item.name;
+
       // Crear el ítem para Mercado Pago
       const mpItem: MpItemDto = {
         id: item.productId,
         title: item.name,
-        unit_price: parseFloat(itemUnitPrice.toFixed(2)),
+        unit_price: Math.round(itemUnitPrice),
         category: item.category,
         quantity: 1,
         currency_id: 'ARS',
-        description: item.description,
+        description: safeDescription,
         picture_url: item.images[0],
       };
 
@@ -758,11 +762,18 @@ export class OrdersService {
     }
   }
 
-  async mpWebhook(query: any) {
-    const topic = query.topic || query.type;
+  async mpWebhook(query: any, body?: any) {
+    const topic = query.topic || query.type || body?.type;
 
     if (topic === 'payment') {
-      const paymentId = query.id || query['data.id'];
+      // IPN format: query.id = payment ID
+      // Newer webhook format: body.data.id = payment ID, query.id = notification ID
+      const paymentId = body?.data?.id || query.id || query['data.id'];
+      console.log('[MP Webhook] topic:', topic, '| paymentId:', paymentId, '| query:', JSON.stringify(query), '| body:', JSON.stringify(body));
+      if (!paymentId) {
+        console.error('[MP Webhook] No paymentId found in webhook notification');
+        return 'OK';
+      }
       const payment = await this.mercadoPagoService.getPayment(paymentId);
 
       if (payment.status === 'approved') {

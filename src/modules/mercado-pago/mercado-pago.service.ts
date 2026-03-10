@@ -18,13 +18,25 @@ export class MercadoPagoService {
       Authorization: `Bearer ${this.accessToken}`,
     };
 
+    if (!this.accessToken) {
+      console.error('[MP] MP_ACCESS_TOKEN is not configured');
+    }
+    console.log('[MP] Creating preference at:', url);
+    console.log('[MP] notification_url:', createMercadoPagoDto.notification_url);
+
     try {
       const response = await axios.post(url, createMercadoPagoDto, { headers });
       return response.data;
     } catch (error) {
+      const status = error.response?.status;
+      const data = error.response?.data;
       console.error(
-        'Error creating Mercado Pago order:',
-        error.response ? error.response.data : error.message,
+        'Error creating Mercado Pago order — HTTP status:',
+        status,
+        '| data:',
+        JSON.stringify(data),
+        '| message:',
+        error.message,
       );
       throw new HttpException(
         'Failed to create Mercado Pago order',
@@ -44,9 +56,15 @@ export class MercadoPagoService {
       const response = await axios.get(url, { headers });
       return response.data;
     } catch (error) {
+      const status = error.response?.status;
+      const data = error.response?.data;
       console.error(
-        'Error getting Mercado Pago payment:',
-        error.response ? error.response.data : error.message,
+        'Error getting Mercado Pago payment — HTTP status:',
+        status,
+        '| data:',
+        JSON.stringify(data),
+        '| message:',
+        error.message,
       );
       throw new HttpException(
         'Failed to get Mercado Pago payment',

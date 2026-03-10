@@ -66,8 +66,8 @@ export class OrdersController {
 
   @Post('mercadopago/webhook')
   mpWebhook(@Req() req: Request) {
-    const { query } = req;
-    return this.ordersService.mpWebhook(query);
+    const { query, body } = req;
+    return this.ordersService.mpWebhook(query, body);
   }
 
   @Post('validate-coupon')
