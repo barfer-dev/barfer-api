@@ -26,6 +26,7 @@ import { MetaConversionsModule } from '../meta-conversions/meta-conversions.modu
 import { SalesPointsModule } from '../sales-points/sales-points.module';
 import { DiscountsModule } from '../discounts/discounts.module';
 import { BankInfoModule } from '../bank-info/bank-info.module';
+import { SurveysModule } from '../surveys/surveys.module';
 
 @Module({
   imports: [
@@ -67,6 +68,7 @@ import { BankInfoModule } from '../bank-info/bank-info.module';
     SalesPointsModule,
     DiscountsModule,
     BankInfoModule,
+    SurveysModule,
   ],
   controllers: [AppController],
   providers: [AppService],
