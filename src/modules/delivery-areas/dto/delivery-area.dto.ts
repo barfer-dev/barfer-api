@@ -13,37 +13,38 @@ import { WeekDay } from '../../../schemas/delivery-area.schema';
 export class DeliveryAreaDto {
   @IsOptional()
   @IsString()
-  description: string;
+  description?: string;
 
   @IsOptional()
   @IsArray()
   @ArrayNotEmpty()
-  coordinates: number[][];
+  coordinates?: number[][];
 
   @IsOptional()
   @IsString()
-  schedule: string;
+  schedule?: string;
 
   @IsOptional()
   @IsNumber()
-  orderCutOffHour: number;
+  orderCutOffHour?: number;
 
   @IsOptional()
   @IsBoolean() 
-  sameDayDelivery: boolean;
+  sameDayDelivery?: boolean;
 
   @ValidateIf(o => o.sameDayDelivery === true)
   @IsArray()
   @ArrayNotEmpty()
   @IsEnum(WeekDay, { each: true })
-  sameDayDeliveryDays: WeekDay[];
+  sameDayDeliveryDays?: WeekDay[];
 
   @IsOptional()
-  whatsappNumber: string;
+  @IsString()
+  whatsappNumber?: string;
 
   @IsOptional()
   @IsBoolean()
-  enabled: boolean;
+  enabled?: boolean;
 
   @IsOptional()
   @IsString()
@@ -52,4 +53,16 @@ export class DeliveryAreaDto {
   @IsOptional()
   @IsString()
   puntoEnvio?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  isReseller?: boolean;
+
+  @IsOptional()
+  @IsString()
+  resellerWhatsapp?: string;
+
+  @IsOptional()
+  @IsString()
+  resellerMessage?: string;
 }

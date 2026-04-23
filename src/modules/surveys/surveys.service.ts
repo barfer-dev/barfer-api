@@ -15,8 +15,6 @@ export class SurveysService {
 
     //api para buscar que usuarios les corresponde la encuesta
     async findClientsByAnswerMetadata(tag: string, valueQuery: any) {
-        console.log("tag", tag);
-        console.log("valueQuery", valueQuery);
         return this.responseModel
             .find({
                 'answers.metadata.tag': tag,
@@ -28,8 +26,6 @@ export class SurveysService {
     }
 
     async getPostPurchaseSurvey(userId: string, userEmail: string) {
-        console.log("userId", userId);
-        console.log("userEmail", userEmail);
         // Verificar que sea exactamente su primera orden 
         // Primero buscamos si el usuario tiene solo 1 compra comprobando user.email u userId.
         const ordersCount = await this.orderModel.countDocuments({

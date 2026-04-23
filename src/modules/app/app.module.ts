@@ -27,6 +27,7 @@ import { SalesPointsModule } from '../sales-points/sales-points.module';
 import { DiscountsModule } from '../discounts/discounts.module';
 import { BankInfoModule } from '../bank-info/bank-info.module';
 import { SurveysModule } from '../surveys/surveys.module';
+import { OrdersRevendedoresModule } from '../orders-revendedores/orders-revendedores.module';
 
 @Module({
   imports: [
@@ -69,6 +70,7 @@ import { SurveysModule } from '../surveys/surveys.module';
     DiscountsModule,
     BankInfoModule,
     SurveysModule,
+    OrdersRevendedoresModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -104,14 +104,6 @@ export class OrdersService {
         createOrderDto.paymentMethod,
       );
 
-    console.log('=== DEBUG DESCUENTOS ===');
-    console.log('Cupón:', coupon);
-    console.log('Descuentos calculados:', JSON.stringify(discounts, null, 2));
-    console.log('Total discount:', discounts.totalDiscount);
-    console.log('Coupon discount:', discounts.couponDiscount);
-    console.log('Coupon discount amount:', discounts.couponDiscount?.amount);
-
-
     const itemsWithEffectivePrice = await Promise.all(
       createOrderDto.items.map(async (item) => {
         const optionDto = item.options[0];
@@ -625,6 +617,9 @@ export class OrdersService {
       whatsappNumber: deliveryArea.whatsappNumber,
       sameDayDeliveryDays: deliveryArea.sameDayDeliveryDays,
       puntoEnvio: deliveryArea.puntoEnvio,
+      isReseller: deliveryArea.isReseller || false,
+      resellerWhatsapp: deliveryArea.resellerWhatsapp,
+      resellerMessage: deliveryArea.resellerMessage,
     };
     return deliveryAreaOrder;
   }
@@ -766,10 +761,7 @@ export class OrdersService {
     const topic = query.topic || query.type || body?.type;
 
     if (topic === 'payment') {
-      // IPN format: query.id = payment ID
-      // Newer webhook format: body.data.id = payment ID, query.id = notification ID
       const paymentId = body?.data?.id || query.id || query['data.id'];
-      console.log('[MP Webhook] topic:', topic, '| paymentId:', paymentId, '| query:', JSON.stringify(query), '| body:', JSON.stringify(body));
       if (!paymentId) {
         console.error('[MP Webhook] No paymentId found in webhook notification');
         return 'OK';

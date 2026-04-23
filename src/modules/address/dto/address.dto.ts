@@ -2,8 +2,8 @@ import { IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class AddressDto {
   @IsString()
-  @IsNotEmpty()
-  userId: string;
+  @IsOptional()
+  userId?: string;
 
   @IsString()
   @IsNotEmpty()
@@ -31,7 +31,7 @@ export class AddressDto {
 
   @IsNotEmpty()
   @IsString()
-  phone: number;
+  phone: string;
 
   @IsNotEmpty()
   @IsEmail()

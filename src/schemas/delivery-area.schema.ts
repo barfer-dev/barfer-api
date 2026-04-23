@@ -43,6 +43,15 @@ export class DeliveryArea {
 
   @Prop({ required: false })
   puntoEnvio?: string;
+
+  @Prop({ default: false })
+  isReseller: boolean;
+
+  @Prop({ required: false })
+  resellerWhatsapp?: string;
+
+  @Prop({ required: false })
+  resellerMessage?: string;
 }
 
 export const DeliveryAreaSchema = SchemaFactory.createForClass(DeliveryArea);

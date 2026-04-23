@@ -23,7 +23,7 @@ export class CouponsService {
     private readonly productModel: Model<Product>,
     private readonly paginationService: PaginationService,
     private readonly optionsService: OptionsService,
-  ) {}
+  ) { }
 
   /**
    * Crea un nuevo cupón en el sistema
@@ -112,8 +112,8 @@ export class CouponsService {
    * @returns El cupón encontrado
    */
   async findOneByCode(code: string): Promise<CouponDocument> {
-    const coupon = await this.couponModel.findOne({ 
-      code: { $regex: new RegExp(`^${code}$`, 'i') } 
+    const coupon = await this.couponModel.findOne({
+      code: { $regex: new RegExp(`^${code}$`, 'i') }
     }).exec();
     if (!coupon) {
       throw new NotFoundException('Coupon not found by CODE');
@@ -193,33 +193,18 @@ export class CouponsService {
   ): Promise<{ discount: number; isValid: boolean }> {
     try {
       const coupon = await this.findOneByCode(code);
-
-      console.log('=== DEBUG VALIDACIÓN CUPÓN ===');
-      console.log('Código cupón:', code);
-      console.log('Cupón encontrado:', {
-        type: coupon.type,
-        value: coupon.value,
-        applicableProductOption: coupon.applicableProductOption,
-        count: coupon.count,
-        limit: coupon.limit,
-      });
-      console.log('Productos:', products);
-
       // Verificar si el cupón ha alcanzado su límite
       if (coupon.count >= coupon.limit) {
-        console.log('Cupón alcanzó su límite');
         return { discount: 0, isValid: false };
       }
 
       // Verificar si el usuario ya usó el cupón
       if (coupon.usedByUsers.get(userId)) {
-        console.log('Usuario ya usó el cupón');
         return { discount: 0, isValid: false };
       }
 
       let discount = 0;
       const subtotal = await this.calculateSubtotal(products);
-      console.log('Subtotal calculado:', subtotal);
 
       // Si hay una opción específica, verificar que esté en el carrito
       if (coupon.applicableProductOption) {
@@ -241,7 +226,7 @@ export class CouponsService {
 
         // Obtener el producto para verificar si tiene offerPrice a nivel de producto
         const productDoc = await this.productModel.findById(option.productId).exec();
-        
+
         // Prioridad: product.offerPrice > option.offerPrice > option.price
         let effectivePrice = option.price;
         if (option.offerPrice && option.offerPrice > 0) {
@@ -260,18 +245,12 @@ export class CouponsService {
         // Cupón aplicable a toda la orden
         if (coupon.type === CouponType.FIXED) {
           discount = coupon.value;
-          console.log('Descuento fijo aplicado:', discount);
         } else {
           discount = (subtotal * coupon.value) / 100;
-          console.log('Descuento porcentual aplicado:', discount, `(${coupon.value}% de ${subtotal})`);
         }
       }
-
-      console.log('Descuento final calculado:', discount);
-      console.log('=== FIN DEBUG VALIDACIÓN CUPÓN ===');
       return { discount, isValid: true };
     } catch (error) {
-      console.log('Error al validar cupón:', error.message);
       return { discount: 0, isValid: false };
     }
   }
@@ -288,10 +267,10 @@ export class CouponsService {
     let subtotal = 0;
     for (const product of products) {
       const option = await this.optionsService.findOne(product.optionId);
-      
+
       // Obtener el producto para verificar si tiene offerPrice a nivel de producto
       const productDoc = await this.productModel.findById(option.productId).exec();
-      
+
       // Prioridad: product.offerPrice > option.offerPrice > option.price
       let effectivePrice = option.price;
       if (option.offerPrice && option.offerPrice > 0) {
@@ -300,7 +279,7 @@ export class CouponsService {
       if (productDoc && productDoc.offerPrice && productDoc.offerPrice > 0) {
         effectivePrice = productDoc.offerPrice;
       }
-      
+
       subtotal += effectivePrice * product.quantity;
     }
     return subtotal;

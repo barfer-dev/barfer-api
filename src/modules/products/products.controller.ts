@@ -19,7 +19,7 @@ export class ProductsController {
   constructor(
     private readonly productsService: ProductsService,
     private readonly googleSheetsService: GoogleSheetsService,
-  ) {}
+  ) { }
 
   @Post('/new')
   @Auth(Roles.Admin)
@@ -80,7 +80,6 @@ export class ProductsController {
   @Post('add-to-sheet')
   // @Auth(Roles.Admin)
   async addToSheet(@Body() product: any) {
-    console.log('Producto recibido para agregar al sheet:', product);
     await this.googleSheetsService.addProductToSheet(product);
     return { message: 'Producto agregado al sheet' };
   }

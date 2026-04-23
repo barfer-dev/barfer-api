@@ -21,9 +21,6 @@ export class MercadoPagoService {
     if (!this.accessToken) {
       console.error('[MP] MP_ACCESS_TOKEN is not configured');
     }
-    console.log('[MP] Creating preference at:', url);
-    console.log('[MP] notification_url:', createMercadoPagoDto.notification_url);
-
     try {
       const response = await axios.post(url, createMercadoPagoDto, { headers });
       return response.data;

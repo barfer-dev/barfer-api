@@ -19,7 +19,7 @@ export class ProductDto {
   name?: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   description?: string;
 
   @IsNumber()
@@ -36,6 +36,7 @@ export class ProductDto {
 
   @IsString()
   @IsNotEmpty()
+  @IsOptional()
   category?: string;
 
   @IsArray()
