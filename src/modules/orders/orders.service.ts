@@ -843,6 +843,11 @@ export class OrdersService {
       throw new BadRequestException('COUPON_ALREADY_USED');
     }
 
+    // Verificar si el cupón ha alcanzado su límite total de usos
+    if (coupon.count >= coupon.limit) {
+      throw new BadRequestException('COUPON_LIMIT_REACHED');
+    }
+
     if (coupon.applicableProductOption) {
       const isApplicable = cartDto.products.some(
         (product) =>
