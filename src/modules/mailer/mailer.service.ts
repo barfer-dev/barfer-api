@@ -84,7 +84,7 @@ export class MailerService {
               Estamos muy contentos de que seas parte de la familia de Barfer🙌💙
             </p>
             <p style="margin: 0 0 12px 0; font-size: 16px; color: #2d3748; line-height: 1.6;">
-              Entrando al siguiente link: <a href="https://www.barferalimento.com/nuevo-usuario" style="color: #265BA7; text-decoration: none; font-weight: 600;">Nuevo usuario | barfer alimento</a> vas a tener info de cuanto debes darle de comer a tu amigo🐶😺, como se debe utilizar el alimento e ingresando el cupón: <strong>BARFER20</strong>, vas a tener un 20% de descuento en tu primera compra.
+              Entrando al siguiente link: <a href="https://www.barferalimento.com/nuevo-usuario" style="color: #265BA7; text-decoration: none; font-weight: 600;">Nuevo usuario | barfer alimento</a> vas a tener info de cuanto debes darle de comer a tu amigo🐶😺 y cómo se debe utilizar el alimento.
             </p>
             <p style="margin: 0; font-size: 16px; color: #2d3748; line-height: 1.6;">
               Explora nuestra tienda y encuentra los mejores productos para el bienestar de tu peludo!
