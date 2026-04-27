@@ -292,13 +292,17 @@ export class OrdersService {
     // Incrementar el contador
     couponRecord.count += 1;
 
-    // Registrar al usuario en usedByUsers
-    couponRecord.usedByUsers.set(userId, true);
+    // Incrementar el contador de uso por usuario
+    const currentUses = couponRecord.usedByUsers.get(userId) || 0;
+    couponRecord.usedByUsers.set(userId, currentUses + 1);
 
-    // Guardar los cambios en el cupón
+    // Guardar los cambios en el cupón (solo enviamos el contador y los usuarios para evitar conflictos de unique key)
     await this.couponService.update(
       couponRecord?.id || couponRecord?._id,
-      couponRecord,
+      {
+        count: couponRecord.count,
+        usedByUsers: couponRecord.usedByUsers as any,
+      },
     );
   }
 
@@ -687,9 +691,12 @@ export class OrdersService {
     await order.save();
 
     if (OrderStatus[updateOrderDto.status] === OrderStatus[5]) {
-      const coupon = await this.couponService.findOneByCode(order.coupon);
-      coupon.count -= 1;
-      await this.couponService.update(order.coupon, coupon);
+      const couponRecord = await this.couponService.findOneByCode(order.coupon);
+      if (couponRecord) {
+        await this.couponService.update(couponRecord.id, {
+          count: couponRecord.count - 1,
+        });
+      }
       await this.sumStock(order.items);
       order.items.forEach(async (item) => {
         try {
@@ -838,13 +845,14 @@ export class OrdersService {
       throw new NotFoundException('COUPON_NOT_FOUND');
     }
 
-    // Verificar si el usuario ya ha utilizado este cupón
-    if (coupon.usedByUsers && coupon.usedByUsers.has(cartDto.userId)) {
+    // Verificar si el usuario ya alcanzó su límite de usos para este cupón
+    const userUses = coupon.usedByUsers.get(cartDto.userId) || 0;
+    if (userUses >= (coupon.maxUsesPerUser || 1)) {
       throw new BadRequestException('COUPON_ALREADY_USED');
     }
 
     // Verificar si el cupón ha alcanzado su límite total de usos
-    if (coupon.count >= coupon.limit) {
+    if (coupon.limit > 0 && coupon.count >= coupon.limit) {
       throw new BadRequestException('COUPON_LIMIT_REACHED');
     }
 

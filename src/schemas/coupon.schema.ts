@@ -77,11 +77,17 @@ export class Coupon {
   maxAplicableUnits?: number; // Máximo de unidades a las que se aplicará el cupón
 
   @Prop({
+    type: Number,
+    default: 1,
+  })
+  maxUsesPerUser: number; // Número máximo de veces que un mismo usuario puede usar este cupón
+
+  @Prop({
     type: Map,
-    of: Boolean,
+    of: Number,
     default: {},
   })
-  usedByUsers: Map<string, boolean>;
+  usedByUsers: Map<string, number>;
 }
 
 export const CouponSchema = SchemaFactory.createForClass(Coupon);

@@ -11,7 +11,7 @@ import { CouponType } from '../../../common/enums/coupons-types.enum';
 export class UpdateCouponDto {
   @IsString()
   @IsOptional()
-  code: string;
+  code?: string;
 
   @IsNumber()
   @IsOptional()
@@ -40,4 +40,11 @@ export class UpdateCouponDto {
   @IsNumber()
   @IsOptional()
   maxAplicableUnits?: number; // Cuántas unidades aplican al descuento
+
+  @IsNumber()
+  @IsOptional()
+  maxUsesPerUser?: number; // Cuántas veces lo puede usar el mismo usuario
+
+  @IsOptional()
+  usedByUsers?: Map<string, number>;
 }

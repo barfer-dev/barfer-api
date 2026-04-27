@@ -41,4 +41,8 @@ export class CreateCouponDto {
   @IsNumber()
   @IsOptional()
   maxAplicableUnits?: number; // Cuántas unidades aplican al descuento
+
+  @IsNumber()
+  @IsOptional()
+  maxUsesPerUser?: number; // Cuántas veces lo puede usar el mismo usuario
 }

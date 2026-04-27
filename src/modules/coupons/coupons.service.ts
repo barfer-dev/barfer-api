@@ -73,7 +73,7 @@ export class CouponsService {
     const newCoupon = new this.couponModel({
       ...createCouponDto,
       count: 0,
-      usedByUsers: new Map<string, boolean>(),
+      usedByUsers: new Map<string, number>(),
     });
 
     return await newCoupon.save();
@@ -137,6 +137,20 @@ export class CouponsService {
     // Verificar que el cupón exista
     await this.findOneById(id);
 
+    // Validar unicidad del código si se está cambiando
+    if (updateCouponDto.code) {
+      const existingCoupon = await this.couponModel
+        .findOne({
+          code: { $regex: new RegExp(`^${updateCouponDto.code}$`, 'i') },
+          _id: { $ne: id }, // Que no sea el mismo que estamos editando
+        })
+        .exec();
+
+      if (existingCoupon) {
+        throw new BadRequestException('COUPON_ALREADY_EXISTS');
+      }
+    }
+
     // Validar que la opción de producto aplicable exista si se está actualizando
     if (updateCouponDto.applicableProductOption) {
       const optionExists = await this.optionsService.findOne(
@@ -194,12 +208,13 @@ export class CouponsService {
     try {
       const coupon = await this.findOneByCode(code);
       // Verificar si el cupón ha alcanzado su límite
-      if (coupon.count >= coupon.limit) {
+      if (coupon.limit > 0 && coupon.count >= coupon.limit) {
         return { discount: 0, isValid: false };
       }
 
-      // Verificar si el usuario ya usó el cupón
-      if (coupon.usedByUsers.get(userId)) {
+      // Verificar si el usuario ya alcanzó su límite de usos para este cupón
+      const userUses = coupon.usedByUsers.get(userId) || 0;
+      if (userUses >= (coupon.maxUsesPerUser || 1)) {
         return { discount: 0, isValid: false };
       }
 
