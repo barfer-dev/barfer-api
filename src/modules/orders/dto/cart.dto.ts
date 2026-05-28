@@ -1,5 +1,11 @@
 import { Type } from 'class-transformer';
-import { IsArray, IsNotEmpty, IsString, ValidateNested } from 'class-validator';
+import {
+  IsArray,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
 
 class CartProductDto {
   @IsString()
@@ -22,6 +28,10 @@ export class CartDto {
   @IsString()
   @IsNotEmpty()
   coupon: string;
+
+  @IsString()
+  @IsOptional()
+  addressId?: string;
 
   @IsArray()
   @ValidateNested({ each: true })

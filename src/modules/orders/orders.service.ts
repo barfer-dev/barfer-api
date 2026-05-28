@@ -90,6 +90,7 @@ export class OrdersService {
     const cartDto: CartDto = {
       userId,
       coupon,
+      addressId,
       products: createOrderDto.items.map((item) => ({
         productId: item.productId,
         optionId: item.options[0].id,
@@ -690,11 +691,23 @@ export class OrdersService {
     order.status = OrderStatus[updateOrderDto.status];
     await order.save();
 
-    if (OrderStatus[updateOrderDto.status] === OrderStatus[5]) {
+    if (OrderStatus[updateOrderDto.status] === OrderStatus[5] && order.coupon) {
       const couponRecord = await this.couponService.findOneByCode(order.coupon);
       if (couponRecord) {
+        const userId = order.address?.userId;
+        const currentUses = userId
+          ? couponRecord.usedByUsers.get(userId) || 0
+          : 0;
+
+        if (userId && currentUses > 1) {
+          couponRecord.usedByUsers.set(userId, currentUses - 1);
+        } else if (userId && currentUses === 1) {
+          couponRecord.usedByUsers.delete(userId);
+        }
+
         await this.couponService.update(couponRecord.id, {
-          count: couponRecord.count - 1,
+          count: Math.max(couponRecord.count - 1, 0),
+          usedByUsers: couponRecord.usedByUsers as any,
         });
       }
       await this.sumStock(order.items);
@@ -845,15 +858,13 @@ export class OrdersService {
       throw new NotFoundException('COUPON_NOT_FOUND');
     }
 
-    // Verificar si el usuario ya alcanzó su límite de usos para este cupón
-    const userUses = coupon.usedByUsers.get(cartDto.userId) || 0;
-    if (userUses >= (coupon.maxUsesPerUser || 1)) {
-      throw new BadRequestException('COUPON_ALREADY_USED');
-    }
-
-    // Verificar si el cupón ha alcanzado su límite total de usos
-    if (coupon.limit > 0 && coupon.count >= coupon.limit) {
-      throw new BadRequestException('COUPON_LIMIT_REACHED');
+    const eligibility = await this.couponService.validateCouponEligibility(
+      coupon,
+      cartDto.userId,
+      cartDto.addressId,
+    );
+    if (!eligibility.isEligible) {
+      throw new BadRequestException(eligibility.reason || 'COUPON_NOT_VALID');
     }
 
     if (coupon.applicableProductOption) {

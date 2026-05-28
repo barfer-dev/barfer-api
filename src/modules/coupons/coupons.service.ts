@@ -13,6 +13,10 @@ import { OptionsService } from '../options/options.service';
 import { PaginationService } from '../pagination/pagination.service';
 import { CreateCouponDto } from './dto/create-coupon.dto';
 import { UpdateCouponDto } from './dto/update-coupon.dto';
+import {
+  CouponEligibilityResult,
+  CouponEligibilityService,
+} from './services/coupon-eligibility.service';
 
 @Injectable()
 export class CouponsService {
@@ -23,6 +27,7 @@ export class CouponsService {
     private readonly productModel: Model<Product>,
     private readonly paginationService: PaginationService,
     private readonly optionsService: OptionsService,
+    private readonly couponEligibilityService: CouponEligibilityService,
   ) { }
 
   /**
@@ -204,17 +209,16 @@ export class CouponsService {
     code: string,
     userId: string,
     products: Array<{ optionId: string; quantity: number }>,
+    addressId?: string,
   ): Promise<{ discount: number; isValid: boolean }> {
     try {
       const coupon = await this.findOneByCode(code);
-      // Verificar si el cupón ha alcanzado su límite
-      if (coupon.limit > 0 && coupon.count >= coupon.limit) {
-        return { discount: 0, isValid: false };
-      }
-
-      // Verificar si el usuario ya alcanzó su límite de usos para este cupón
-      const userUses = coupon.usedByUsers.get(userId) || 0;
-      if (userUses >= (coupon.maxUsesPerUser || 1)) {
+      const eligibility = await this.validateCouponEligibility(
+        coupon,
+        userId,
+        addressId,
+      );
+      if (!eligibility.isEligible) {
         return { discount: 0, isValid: false };
       }
 
@@ -268,6 +272,18 @@ export class CouponsService {
     } catch (error) {
       return { discount: 0, isValid: false };
     }
+  }
+
+  async validateCouponEligibility(
+    coupon: CouponDocument,
+    userId: string,
+    addressId?: string,
+  ): Promise<CouponEligibilityResult> {
+    if (coupon.limit > 0 && coupon.count >= coupon.limit) {
+      return { isEligible: false, reason: 'COUPON_LIMIT_REACHED' };
+    }
+
+    return this.couponEligibilityService.validate(coupon, userId, addressId);
   }
 
   /**

@@ -120,6 +120,7 @@ export class DiscountCalculatorService {
       cart.coupon,
       cart.userId,
       cart.products,
+      cart.addressId,
     );
 
     if (isValid && discount > 0) {
