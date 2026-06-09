@@ -16,7 +16,7 @@ export class AddressService {
     @InjectModel(Address.name) private readonly addressModel: Model<Address>,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     private readonly configService: ConfigService,
-  ) {}
+  ) { }
 
   async create(createAddressDto: AddressDto) {
     return await new this.addressModel(createAddressDto).save();
