@@ -7,7 +7,7 @@ import { formatPrice } from '../../common/utils/formatPrice';
 
 @Injectable()
 export class MailerService {
-  constructor(private readonly configService: ConfigService) {}
+  constructor(private readonly configService: ConfigService) { }
 
   private getLogoAsAttachment(): any[] {
     try {
@@ -66,7 +66,7 @@ export class MailerService {
   }
 
   async sendWelcomeEmail(userEmail: string, userName: string) {
-    const subject = '¡Bienvenido a Raw!';
+    const subject = '¡Bienvenido a BARFER!';
     const frontendUrl = this.configService.get<string>('FRONTEND_BASE_URL');
     const logoAttachments = this.getLogoAsAttachment();
 
@@ -117,16 +117,16 @@ export class MailerService {
     const deliveryDate = order.deliveryDate || 'Fecha no especificada';
     const frontendUrl = this.configService.get<string>('FRONTEND_BASE_URL');
     const logoAttachments = this.getLogoAsAttachment();
-  
+
     function formatPrice(value: number) {
       return '$' + value.toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
     }
-  
+
     const quantityTotal = order.items.reduce(
       (prev, acc) => acc.options[0].quantity + prev,
       0,
     );
-  
+
     const productsHtml = order.items
       .map((product) => {
         const subTotal =
@@ -137,7 +137,7 @@ export class MailerService {
             : 0;
         const totalDiscount = (product.discountApplied || 0) + cashDiscount;
         const discountedPrice = subTotal - totalDiscount;
-  
+
         return `
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f7fafc; border-radius: 12px; margin-bottom: 12px; padding: 12px;">
           <tr>
@@ -152,23 +152,22 @@ export class MailerService {
               </div>
             </td>
             <td style="vertical-align: middle; text-align: right; white-space: nowrap;">
-              ${
-                totalDiscount > 0
-                  ? `
+              ${totalDiscount > 0
+            ? `
                 <p style="margin: 0; font-size: 14px; color: #a0aec0; text-decoration: line-through;">${formatPrice(subTotal)}</p>
                 <p style="margin: 0; font-size: 18px; font-weight: 700; color: #e53e3e;">${formatPrice(discountedPrice)}</p>
               `
-                  : `
+            : `
                 <p style="margin: 0; font-size: 18px; font-weight: 700; color: #2d3748;">${formatPrice(subTotal)}</p>
               `
-              }
+          }
             </td>
           </tr>
         </table>
       `;
       })
       .join('');
-  
+
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; background-color: #f8f9fa;">
         <div style="background-color: #fff; border-radius: 16px; padding: 32px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
@@ -250,12 +249,12 @@ export class MailerService {
         </div>
       </div>
     `;
-  
+
     await this.sendMail(userEmail, subject, undefined, html, logoAttachments);
 
   }
-  
-  
+
+
 
   // async sendOrderConfirmationEmail(userEmail: string, order: Order) {
   //   const subject = 'Confirmación de Pedido';
@@ -326,7 +325,7 @@ export class MailerService {
   //         </div>
 
   //         <h2 style="font-size: 18px; font-weight: 600; color: #2d3748; margin: 0 0 16px 0;">Productos en tu pedido</h2>
-          
+
   //         ${productsHtml}
   //       </div>
 
